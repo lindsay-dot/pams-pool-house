@@ -1,0 +1,6 @@
+.DS_Store
+node_modules/
+dist/
+# family photos and drawings stay on this computer unless Lindsay says otherwise
+Photos/
+Drawings/

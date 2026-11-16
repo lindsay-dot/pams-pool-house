@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "name": "Mom's Backyard",
+    "status": "DRAFT - awaiting review (Stage 0)",
+    "units": "feet (decimal). 12.5 = 12' 6\"",
+    "source": "Drawings/pool-house-schematic-revI-1.html (Pool House - Schematic, Rev. I)",
+    "coordinates": "Origin = outside NW corner of the pool house slab. x runs along the 30' side toward the drawing's east (right side of the floor plan). y runs toward the pool (drawing's south, bottom of the floor plan). Heights (z) are measured up from the top of the slab.",
+    "confidence": "Each item is 'stated' (written on the drawing), 'drawn' (measured from the drawing at its scale), or 'assumed'. Anything 'needs_input' is not on the drawings at all."
+  },
+
+  "compass": {
+    "northIsUpOnPlan": true,
+    "confidence": "needs_input",
+    "note": "The drawing labels the right side EAST and also calls it the 'Sunset End' with the setting sun drawn there. The sun sets in the WEST, so one of the two is wrong. Layout is unaffected; only sun direction and shadows depend on this."
+  },
+
+  "poolHouse": {
+    "slab": { "outline": [[0, 0], [30, 0], [30, 26], [0, 26]], "thicknessIn": 4, "confidence": "stated" },
+    "bays": { "widths": [10, 10, 10], "confidence": "stated" },
+
+    "enclosedBand": {
+      "outline": [[0, 0], [30, 0], [30, 8], [0, 8]],
+      "wallThickness": 0.5,
+      "wallHeight": 10,
+      "confidence": "stated (30' x 8'); wall thickness drawn",
+      "walls": [
+        { "id": "north", "from": [0, 0], "to": [30, 0], "length": 30 },
+        { "id": "west", "from": [0, 0], "to": [0, 8], "length": 8 },
+        { "id": "east", "from": [30, 0], "to": [30, 8], "length": 8 },
+        { "id": "south-west", "from": [0, 8], "to": [10, 8], "length": 10, "note": "faces porch, left of fireplace" },
+        { "id": "south-east", "from": [20, 8], "to": [30, 8], "length": 10, "note": "faces porch, right of fireplace" },
+        { "id": "partition", "from": [20.25, 0.5], "to": [20.25, 7.5], "length": 7, "note": "between storage and bath; meets the fireplace's east corner" }
+      ],
+      "rooms": [
+        { "id": "storage", "label": "Storage + Equipment", "clear": [19.5, 7], "interior": [[0.5, 0.5], [20, 7.5]], "confidence": "stated 19'-6\" x 7'-0\" clear", "contents": ["shelving along north wall", "pump/filter", "water heater", "mower / cart bay"] },
+        { "id": "bath", "label": "Bath + Changing", "nominal": [10, 8], "clearAsDrawn": [9, 7], "interior": [[20.5, 0.5], [29.5, 7.5]], "confidence": "stated 10' x 8' nominal; drawn 9' x 7' clear", "contents": ["sink", "linen", "toilet", "6' bench on east wall"] }
+      ]
+    },
+
+    "doors": [
+      { "id": "garage", "label": "Garage door (storage)", "type": "roll-up / overhead", "wall": "west", "from": [0, 1], "to": [0, 7], "width": 6, "height": 7, "finish": "charcoal steel", "confidence": "stated" },
+      { "id": "service", "label": "Service door", "type": "swing, opens out under lean-to", "wall": "north", "from": [8.5, 0], "to": [11.3, 0], "width": 2.83, "height": 6.67, "curbIn": 4, "confidence": "width drawn (about 2'-10\"); height assumed 6'-8\"" },
+      { "id": "storage", "label": "Storage door", "type": "swing, opens onto porch", "wall": "south-west", "from": [2.5, 8], "to": [5.5, 8], "width": 3, "height": 7, "finish": "stained wood with glass panel", "confidence": "drawn" },
+      { "id": "bath", "label": "Bath door", "type": "swing, opens onto porch", "wall": "south-east", "from": [24.5, 8], "to": [27.5, 8], "width": 3, "height": 7, "finish": "stained wood with glass panel", "confidence": "drawn" }
+    ],
+
+    "windows": [
+      { "id": "bath-east", "label": "Bath window (high)", "wall": "east", "from": [30, 0.85], "to": [30, 7.15], "width": 6.3, "height": 1.85, "sillHeight": 5.45, "trim": "white", "confidence": "drawn (elevation sketch only, not dimensioned)" }
+    ],
+
+    "porch": {
+      "label": "Covered porch",
+      "outline": [[0, 8], [30, 8], [30, 26], [0, 26]],
+      "size": [30, 18],
+      "openSides": ["east", "south", "west"],
+      "ceiling": "vaulted, stained wood, exposed timber beams",
+      "beamUndersideHeight": 10,
+      "shadePocket": { "side": "east", "note": "recessed roller shade pocket in the beam soffit" },
+      "confidence": "stated"
+    },
+
+    "columns": {
+      "size": 0.833,
+      "material": "10\" timber on brick piers",
+      "pier": { "width": 1.375, "height": 1.5, "confidence": "drawn" },
+      "height": 10,
+      "centers": [[0, 26], [10, 26], [20, 26], [30, 26], [0, 17], [30, 17], [0, 8], [30, 8]],
+      "spacing": "10'-0\" on center along the pool side, 9'-0\" on center on the sides",
+      "confidence": "stated",
+      "note": "Drawn centered on the slab edge/corner."
+    },
+
+    "fireplace": {
+      "footprint": [[10, 6.5], [20, 6.5], [20, 10], [10, 10]],
+      "width": 10,
+      "depth": 3.5,
+      "massHeight": 12,
+      "firebox": { "width": 5, "height": 3.5 },
+      "hearth": { "raisedIn": 16, "width": 7 },
+      "mantel": { "width": 8, "heightToUnderside": 4.7 },
+      "woodBoxes": { "count": 2, "width": 1.5 },
+      "chimney": { "width": 4.5, "depth": 3.5, "topHeight": 22.75, "cap": true },
+      "material": "brick",
+      "confidence": "stated: 10' mass, 5' firebox, 16\" hearth, 8' mantel. Everything else drawn."
+    },
+
+    "roof": {
+      "style": "hip",
+      "pitch": "8:12",
+      "overhang": 2,
+      "eaveOutline": [[-2, -2], [32, -2], [32, 28], [-2, 28]],
+      "plateHeight": 10,
+      "eaveHeight": 8.667,
+      "ridgeHeight": 18.667,
+      "ridge": { "from": [13, 13], "to": [17, 13], "length": 4 },
+      "material": "brown architectural shingle",
+      "confidence": "stated (ridge position worked out from the 8:12 pitch; it checks against the stated heights)"
+    },
+
+    "exteriorAsDrawn": {
+      "siding": "cream vertical board-and-batten",
+      "brickBaseHeight": 1,
+      "sconces": 2,
+      "confidence": "drawn"
+    }
+  },
+
+  "leanTo": {
+    "label": "Equipment lean-to",
+    "outline": [[0, -10], [30, -10], [30, 0], [0, 0]],
+    "size": [30, 10],
+    "floor": "compacted crushed stone (gravel)",
+    "posts": { "centers": [[0, -10], [10, -10], [20, -10], [30, -10]], "size": 0.833 },
+    "roof": { "style": "shed", "pitch": "3:12", "material": "standing seam metal", "highSideHeight": 9.15, "lowSideHeight": 6.65 },
+    "confidence": "stated: size, gravel, metal 3:12. Roof heights drawn."
+  },
+
+  "rinseStation": {
+    "label": "Rinse station",
+    "pad": [[30, 3], [35, 3], [35, 7], [30, 7]],
+    "size": [5, 4],
+    "surface": "concrete, sloped away from building",
+    "fixtures": ["wall-mounted shower column", "hose bib"],
+    "backerPanel": { "width": 2.85, "height": 3.85, "finish": "stained wood" },
+    "confidence": "stated"
+  },
+
+  "outdoorKitchen": {
+    "label": "Outdoor kitchen",
+    "asDrawn": { "layout": "straight", "footprint": [[0, 12], [2.5, 12], [2.5, 24.5], [0, 24.5]], "run": 12.5, "depth": 2.5 },
+    "counterHeightIn": 36,
+    "barHeightIn": 42,
+    "confidence": "stated 12'-6\" run; depth and position drawn",
+    "note": "This is the drawn starting layout. In the app the kitchen layout can be changed (Stage 3); the porch it sits on cannot."
+  },
+
+  "seatingArea": {
+    "label": "Fireplace seating",
+    "asDrawn": [[5.75, 13.5], [24.25, 13.5], [24.25, 24.5], [5.75, 24.5]],
+    "note": "Guide only, not built geometry. Labeled 19'-0\" clear; drawn 18'-6\"."
+  },
+
+  "overallFootprint": { "size": [35, 36], "note": "pool house + rinse pad + lean-to", "confidence": "stated" },
+
+  "pool": {
+    "confidence": "needs_input",
+    "outline": null,
+    "shape": null,
+    "depthShallow": null,
+    "depthDeep": null,
+    "steps": null,
+    "distanceFromPorch": null,
+    "note": "Not on the drawings. Only known: it is on the open porch side (bottom of the floor plan), and the walk from pool to rinse station comes around the right-hand side."
+  },
+
+  "poolDeck": { "confidence": "needs_input", "outline": null, "note": "Not on the drawings." },
+
+  "lawn": { "confidence": "needs_input", "outline": null, "note": "Not on the drawings. Property / back yard size and any fence unknown." },
+
+  "existingHouse": {
+    "confidence": "needs_input",
+    "outline": null,
+    "positionRelativeToPoolHouse": null,
+    "styleFromPhotos": {
+      "siding": "warm white vertical board-and-batten",
+      "brick": "dark charcoal-brown brick base, about 3' high, brick porch and steps",
+      "roof": "hip roof, dark brown-charcoal architectural shingles, shed dormer with three windows",
+      "trim": "white trim, fascia, gutters and downspouts",
+      "columns": "square painted columns on the front porch",
+      "doors": "dark stained wood double front door with glass",
+      "lights": "black lantern sconces"
+    },
+    "note": "Photos show the front and sides only. Footprint and where it sits relative to the pool house are unknown."
+  }
+}
