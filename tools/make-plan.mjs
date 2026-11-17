@@ -101,18 +101,21 @@ rect([0, 0], [30, t], 'class="wall"');
 rect([0, 0], [t, 8], 'class="wall"');
 rect([30 - t, 0], [30, 8], 'class="wall"');
 rect([0, 8 - t], [30, 8], 'class="wall"');
-rect([20, 0], [20 + t, 8], 'class="wall"');
-for (const r of ph.enclosedBand.rooms) rect(r.interior[0], r.interior[1], 'class="room"');
-text(1.2, 2.2, 'STORAGE + EQUIPMENT', 'lbl');
-text(1.2, 3.3, `${ftIn(19.5)} × ${ftIn(7)} clear`, 'note');
-text(21.2, 2.2, 'BATH + CHANGING', 'lbl');
-text(21.2, 3.3, `10' × 8' nominal`, 'note');
-text(21.2, 4.3, `(9' × 7' clear as drawn)`, 'note');
+const part = ph.enclosedBand.walls.find((w) => w.id === 'partition');
+rect([part.from[0] - t / 2, 0], [part.from[0] + t / 2, 8], 'class="wall"');
+for (const r of ph.enclosedBand.rooms) {
+  rect(r.interior[0], r.interior[1], 'class="room"');
+  const [x, y] = r.interior[0];
+  text(x + 0.7, y + 1.7, r.label.toUpperCase(), 'lbl');
+  if (r.clear) text(x + 0.7, y + 2.8, `${ftIn(r.clear[0])} × ${ftIn(r.clear[1])} clear`, 'note');
+  else { text(x + 0.7, y + 2.8, `${r.nominal[0]}' × ${r.nominal[1]}' nominal`, 'note'); text(x + 0.7, y + 3.8, `(${r.clearAsDrawn[0]}' × ${r.clearAsDrawn[1]}' clear as drawn)`, 'note'); }
+}
 
-// --- rinse station --------------------------------------------------------
-box(site.rinseStation.pad, 'class="conc"');
-text(35.5, 4.6, 'RINSE STATION', 'lbl');
-text(35.5, 5.7, `${ftIn(5)} × ${ftIn(4)} pad`, 'note');
+// --- rinse station (removed in Rev. J; drawn only if site.json has one) -----
+if (site.rinseStation) {
+  box(site.rinseStation.pad, 'class="conc"');
+  text(35.5, 4.6, 'RINSE STATION', 'lbl');
+}
 
 // --- fireplace ------------------------------------------------------------
 box(ph.fireplace.footprint, 'class="brick"');
@@ -125,14 +128,31 @@ for (const d of ph.doors) {
   const a = vertical ? [d.from[0] - 0.35, d.from[1]] : [d.from[0], d.from[1] - 0.35];
   const b = vertical ? [d.to[0] + 0.35, d.to[1]] : [d.to[0], d.to[1] + 0.35];
   rect(a, b, 'class="door"');
+  const name = d.label.replace(/ \(.*\)/, '').toUpperCase();
+  if (d.wall === 'west' || d.wall === 'east') {
+    const x = d.wall === 'west' ? -0.8 : d.from[0] + 0.8, anchor = d.wall === 'west' ? 'text-anchor="end"' : '';
+    text(x, 3.6, name, 'lbl', anchor);
+    text(x, 4.7, `${ftIn(d.width)} wide × ${ftIn(d.height)} high`, 'note', anchor);
+  } else if (d.wall === 'north') text(d.to[0] + 0.6, -0.8, `${name} · ${ftIn(d.width)}`, 'note');
+  else text((d.from[0] + d.to[0]) / 2, 9.3, `${name} · ${ftIn(d.width)}`, 'note', 'text-anchor="middle"');
 }
-text(-0.8, 3.6, 'GARAGE DOOR', 'lbl', 'text-anchor="end"');
-text(-0.8, 4.7, `${ftIn(6)} wide × ${ftIn(7)} high`, 'note', 'text-anchor="end"');
-text(12, -0.8, `SERVICE DOOR · ${ftIn(2.83)}`, 'note');
-text(1.2, 9.3, `STORAGE DOOR · ${ftIn(3)}`, 'note');
-text(28.8, 9.3, `BATH DOOR · ${ftIn(3)}`, 'note', 'text-anchor="end"');
-for (const w of ph.windows) rect([w.from[0] - 0.2, w.from[1]], [w.to[0] + 0.2, w.to[1]], 'class="win"');
-text(30.6, 1.2, `HIGH WINDOW · ${ftIn(6.3)}`, 'note');
+for (const w of ph.windows) {
+  rect([w.from[0] - 0.2, w.from[1]], [w.to[0] + 0.2, w.to[1]], 'class="win"');
+  const room = ph.enclosedBand.rooms.find((r) => r.id === 'bath');
+  text(room.interior[0][0] + 0.7, room.interior[1][1] - 0.6, `HIGH WINDOW · ${ftIn(w.width)}`, 'note');
+}
+
+// --- rainwater harvesting -------------------------------------------------
+if (site.rainwater) {
+  const rw = site.rainwater, tk = rw.tank, [tx0, tz0] = tk.outline[0], [tx1, tz1] = tk.outline[2];
+  box(tk.outline, 'class="tank"');
+  for (const [x, z] of tk.accessLids) add(`<circle cx="${px(x)}" cy="${py(z)}" r="${S}" class="lid"/>`);
+  for (const d of rw.downspouts) add(`<circle cx="${px(d.at[0])}" cy="${py(d.at[1])}" r="5" class="spout"/>`);
+  const cx = (tx0 + tx1) / 2;
+  text(cx, tz1 + 1.3, 'RAINWATER TANK', 'lbl', 'text-anchor="middle"');
+  text(cx, tz1 + 2.4, `underground · ${tk.capacityGallons.toLocaleString('en-US')} gallons`, 'note', 'text-anchor="middle"');
+  text(cx, tz1 + 3.5, `${ftIn(tk.size[0])} × ${ftIn(tk.size[1])} (placeholder)`, 'note', 'text-anchor="middle"');
+}
 
 // --- kitchen --------------------------------------------------------------
 box(site.outdoorKitchen.asDrawn.footprint, 'class="kitchen"');
@@ -160,11 +180,11 @@ text(17.4, 13.3, `ridge ${ftIn(ph.roof.ridgeHeight)}`, 'note');
 // --- dimensions -----------------------------------------------------------
 dim([0, -11.6], [10, -11.6], ftIn(10)); dim([10, -11.6], [20, -11.6], ftIn(10)); dim([20, -11.6], [30, -11.6], ftIn(10));
 dim([0, -13.6], [30, -13.6], `${ftIn(30)} pool house`);
-dim([0, -15.6], [35, -15.6], `${ftIn(35)} overall`);
-dim([-9.5, -10], [-9.5, 0], `${ftIn(10)} lean-to`);
-dim([-9.5, 0], [-9.5, 8], ftIn(8));
-dim([-9.5, 8], [-9.5, 26], `${ftIn(18)} porch`);
-dim([-11.5, -10], [-11.5, 26], `${ftIn(36)} overall`);
+
+dim([-13, -10], [-13, 0], `${ftIn(10)} lean-to`);
+dim([-13, 0], [-13, 8], ftIn(8));
+dim([-13, 8], [-13, 26], `${ftIn(18)} porch`);
+dim([-15, -10], [-15, 26], `${ftIn(36)} overall`);
 dim([41.5, 0], [41.5, 26], `${ftIn(26)} pool house`);
 dim([38.5, 8], [38.5, 17], ftIn(9)); dim([38.5, 17], [38.5, 26], ftIn(9));
 dim([10, 5.6], [20, 5.6], ftIn(10));
@@ -197,7 +217,7 @@ const html = `<!doctype html>
   .col{fill:#3B3936;stroke:#1E2328;stroke-width:1}
   .roof{fill:none;stroke:#804A3C;stroke-width:1.2;stroke-dasharray:7 5}
   .guide{fill:none;stroke:#C9922F;stroke-width:1;stroke-dasharray:4 4}
-  .deck{fill:#DAD7CC;stroke:#1E2328;stroke-width:1.5}.pool{fill:#8CC4DA;stroke:#1E2328;stroke-width:2}.steps{fill:#B9DCE8;stroke:#4A7FA0;stroke-width:1}.house{fill:#EFEDE4;stroke:#5C6570;stroke-width:1.5;stroke-dasharray:8 5}.hporch{fill:#C99A84;stroke:#5C6570;stroke-width:1.5}.fence{fill:none;stroke:#2E7D4F;stroke-width:2.5;stroke-dasharray:3 4}.gate{fill:#2E7D4F}
+  .deck{fill:#DAD7CC;stroke:#1E2328;stroke-width:1.5}.pool{fill:#8CC4DA;stroke:#1E2328;stroke-width:2}.steps{fill:#B9DCE8;stroke:#4A7FA0;stroke-width:1}.house{fill:#EFEDE4;stroke:#5C6570;stroke-width:1.5;stroke-dasharray:8 5}.hporch{fill:#C99A84;stroke:#5C6570;stroke-width:1.5}.tank{fill:#DCE9EF;fill-opacity:.6;stroke:#4A7FA0;stroke-width:1.5;stroke-dasharray:8 5}.lid{fill:#4A7FA0}.spout{fill:#1f6f8b;stroke:#fff;stroke-width:1.5}.fence{fill:none;stroke:#2E7D4F;stroke-width:2.5;stroke-dasharray:3 4}.gate{fill:#2E7D4F}
   .dim{stroke:#5C6570;stroke-width:1;fill:none}
   text{fill:#1E2328}.lbl{font-size:12px;font-weight:700;letter-spacing:.06em}
   .big{font-size:16px;font-weight:700;letter-spacing:.1em}
@@ -205,12 +225,12 @@ const html = `<!doctype html>
   table{border-collapse:collapse;margin-top:16px;font-size:14px}td{padding:5px 18px 5px 0;border-bottom:1px solid #B4BAB6}
   .key span{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin:0 6px 0 16px;border:1px solid #1E2328}
 </style></head><body>
-<h1>Stage 0 — Top-down plan (drawn from site.json)</h1>
-<p>Source: Pool House Schematic, Rev. I. Pool house from the Rev. I drawing; pool, deck and layout from Lindsay's notes; house and fence are estimates.</p>
+<h1>Top-down plan, Rev. J (drawn from site.json)</h1>
+<p>Source: Pool House Schematic, Rev. I. Rev. J: the Rev. I drawing with Pam's changes (rooms swapped, outdoor shower removed, rainwater tank added). House and fence are estimates.</p>
 <div class="sheet"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top-down site plan with dimensions">
 ${out.join('\n')}
 </svg></div>
-<p class="key" style="margin-top:12px"><span style="background:#C9922F;margin-left:0"></span>door<span style="background:#7FB2C8"></span>window<span style="background:#3B3936"></span>column / post<span style="background:#9C5B4A"></span>brick fireplace<span style="background:#CFCBC0"></span>gravel</p>
+<p class="key" style="margin-top:12px"><span style="background:#C9922F;margin-left:0"></span>door<span style="background:#7FB2C8"></span>window<span style="background:#3B3936"></span>column / post<span style="background:#9C5B4A"></span>brick fireplace<span style="background:#CFCBC0"></span>gravel<span style="background:#1f6f8b;border-radius:50%"></span>downspout<span style="background:#DCE9EF;border:1.5px dashed #4A7FA0"></span>underground tank</p>
 <table><tr><td><b>Heights above the slab</b></td><td></td></tr>${heights}</table>
 </body></html>`;
 

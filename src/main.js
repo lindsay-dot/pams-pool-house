@@ -4,7 +4,7 @@ import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import approvedSite from '../site.json';
 import './style.css';
 import { createMaterials } from './materials.js';
-import { buildPoolHouse } from './build/poolhouse.js';
+import { buildPoolHouse, buildRainwater } from './build/poolhouse.js';
 import { buildPoolAndDeck, buildFence } from './build/pool.js';
 import { buildGrounds, buildHouse } from './build/grounds.js';
 import { buildDimensions } from './dimensions.js';
@@ -95,7 +95,7 @@ function rebuildSite() {
   siteGroup = new THREE.Group();
   siteGroup.add(
     buildGrounds(site, M), buildHouse(site, M), buildPoolAndDeck(site, M), buildFence(site, M),
-    buildPoolHouse(site, M),
+    buildPoolHouse(site, M), buildRainwater(site, M),
   );
   dims = buildDimensions(site);
   dims.visible = dimsVisible;

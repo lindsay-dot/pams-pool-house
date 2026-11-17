@@ -33,6 +33,7 @@ export function siteShapes(site, plan) {
     const [ax, az] = d.from, [bx, bz] = d.to;
     const name = { garage: 'the storage garage door', service: 'the service door', storage: 'the storage door', bath: 'the bath door' }[d.id];
     if (d.wall === 'west') doors.push({ name, poly: rectPoly(ax - CLEAR - 1, az, ax, bz) });
+    else if (d.wall === 'east') doors.push({ name, poly: rectPoly(ax, az, ax + CLEAR + 1, bz) });
     else if (d.wall === 'north') doors.push({ name, poly: rectPoly(ax, az - CLEAR, bx, az) });
     else doors.push({ name, poly: rectPoly(ax, az, bx, az + CLEAR) });
   }
@@ -40,6 +41,7 @@ export function siteShapes(site, plan) {
   const c = (porch[0][0] + porch[1][0]) / 2;
   doors.push({ name: 'the steps to the house', poly: rectPoly(c - 5.5, porch[0][1] - CLEAR, c + 5.5, porch[0][1] + 1) });
 
+  if (site.rainwater) for (const [x, z] of site.rainwater.tank.accessLids) doors.push({ name: 'a rainwater tank lid', poly: rectPoly(x - 1.25, z - 1.25, x + 1.25, z + 1.25), lid: true });
   return { obstacles, doors, pool: site.pool.outline, porchRoof: ph.porch.outline };
 }
 
@@ -74,7 +76,7 @@ export function checkDesign(site, design, plan, items = design.items) {
     if (def.flat) continue;
 
     const door = shapes.doors.find((d) => hits(it.id, d.poly));
-    if (door) { say(it.id, `The ${name} is blocking ${door.name}. Leave about 3 feet clear in front of it.`); continue; }
+    if (door) { say(it.id, door.lid ? `The ${name} is sitting on ${door.name}. The lid needs to stay clear.` : `The ${name} is blocking ${door.name}. Leave about 3 feet clear in front of it.`); continue; }
     const wall = shapes.obstacles.find((o) => hits(it.id, o.poly));
     if (wall) { say(it.id, `The ${name} does not fit there. It runs into ${wall.name}.`); continue; }
   }

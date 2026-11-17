@@ -40,6 +40,7 @@ export function createMaterials() {
     metalRoof: std({ map: T.seam('#4a4842'), roughness: 0.45, metalness: 0.5, side: THREE.DoubleSide }),
     glass: std({ color: '#8fa9b3', roughness: 0.08, metalness: 0.2, envMapIntensity: 1.4 }),
     black: std({ color: '#1d1f21', roughness: 0.5, metalness: 0.4 }),
+    tankLid: std({ color: '#2f4a3a', roughness: 0.7 }),
     steel: std({ color: '#b9bec2', roughness: 0.3, metalness: 0.9 }),
 
     // kitchen as drawn (Stage 3 replaces this)

@@ -108,7 +108,7 @@ export function itemOutline(item) {
 
 /** Hard surfaces sit one slab (4") above the lawn. */
 export function onHardSurface(site, p) {
-  return inRect(p, site.poolDeck.outline) || inRect(p, site.poolHouse.slab.outline) || inRect(p, site.rinseStation.pad);
+  return inRect(p, site.poolDeck.outline) || inRect(p, site.poolHouse.slab.outline) || (!!site.rinseStation && inRect(p, site.rinseStation.pad));
 }
 
 export function buildItem(item, site, M) {

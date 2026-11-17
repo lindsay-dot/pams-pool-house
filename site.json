@@ -1,7 +1,12 @@
 {
   "meta": {
     "name": "Pam's Pool House",
-    "status": "LOCKED - approved by Lindsay 2026-11-16. Change only through the Layout tab.",
+    "status": "Rev. J - DRAFT awaiting Lindsay's approval. Rev. I layout plus Pam's three changes.",
+    "changesFromRevI": [
+      "Bath + Changing and Storage + Equipment swapped: bath is now on the left when facing the pool house from the pool, storage on the right. The whole enclosed back section is mirrored, so the garage door moves to the right end wall and the high bath window to the left end wall.",
+      "Outdoor shower (rinse station) removed.",
+      "Rainwater harvesting added: gutters and downspouts to an underground tank on the left side."
+    ],
     "units": "feet (decimal). 12.5 = 12' 6\"",
     "source": "Drawings/pool-house-schematic-revI-1.html (Pool House - Schematic, Rev. I)",
     "coordinates": "Origin = outside NW corner of the pool house slab. x runs along the 30' side toward the drawing's east (right side of the floor plan). y runs toward the pool (drawing's south, bottom of the floor plan). Heights (z) are measured up from the top of the slab.",
@@ -29,23 +34,23 @@
         { "id": "east", "from": [30, 0], "to": [30, 8], "length": 8 },
         { "id": "south-west", "from": [0, 8], "to": [10, 8], "length": 10, "note": "faces porch, left of fireplace" },
         { "id": "south-east", "from": [20, 8], "to": [30, 8], "length": 10, "note": "faces porch, right of fireplace" },
-        { "id": "partition", "from": [20.25, 0.5], "to": [20.25, 7.5], "length": 7, "note": "between storage and bath; meets the fireplace's east corner" }
+        { "id": "partition", "from": [9.75, 0.5], "to": [9.75, 7.5], "length": 7, "note": "between bath and storage; meets the fireplace's left corner" }
       ],
       "rooms": [
-        { "id": "storage", "label": "Storage + Equipment", "clear": [19.5, 7], "interior": [[0.5, 0.5], [20, 7.5]], "confidence": "stated 19'-6\" x 7'-0\" clear", "contents": ["shelving along north wall", "pump/filter", "water heater", "mower / cart bay"] },
-        { "id": "bath", "label": "Bath + Changing", "nominal": [10, 8], "clearAsDrawn": [9, 7], "interior": [[20.5, 0.5], [29.5, 7.5]], "confidence": "stated 10' x 8' nominal; drawn 9' x 7' clear", "contents": ["sink", "linen", "toilet", "6' bench on east wall"] }
+        { "id": "storage", "label": "Storage + Equipment", "clear": [19.5, 7], "interior": [[10, 0.5], [29.5, 7.5]], "confidence": "stated 19'-6\" x 7'-0\" clear; moved to the right side in Rev. J", "contents": ["shelving along north wall", "pump/filter", "water heater", "mower / cart bay"] },
+        { "id": "bath", "label": "Bath + Changing", "nominal": [10, 8], "clearAsDrawn": [9, 7], "interior": [[0.5, 0.5], [9.5, 7.5]], "confidence": "stated 10' x 8' nominal; drawn 9' x 7' clear; moved to the left side in Rev. J", "contents": ["sink", "linen", "toilet", "6' bench on the end wall"] }
       ]
     },
 
     "doors": [
-      { "id": "garage", "label": "Garage door (storage)", "type": "roll-up / overhead", "wall": "west", "from": [0, 1], "to": [0, 7], "width": 6, "height": 7, "finish": "charcoal steel", "confidence": "stated" },
-      { "id": "service", "label": "Service door", "type": "swing, opens out under lean-to", "wall": "north", "from": [8.5, 0], "to": [11.3, 0], "width": 2.83, "height": 6.67, "curbIn": 4, "confidence": "width drawn (about 2'-10\"); height assumed 6'-8\"" },
-      { "id": "storage", "label": "Storage door", "type": "swing, opens onto porch", "wall": "south-west", "from": [2.5, 8], "to": [5.5, 8], "width": 3, "height": 7, "finish": "stained wood with glass panel", "confidence": "drawn" },
-      { "id": "bath", "label": "Bath door", "type": "swing, opens onto porch", "wall": "south-east", "from": [24.5, 8], "to": [27.5, 8], "width": 3, "height": 7, "finish": "stained wood with glass panel", "confidence": "drawn" }
+      { "id": "garage", "label": "Garage door (storage)", "type": "roll-up / overhead", "wall": "east", "from": [30, 1], "to": [30, 7], "width": 6, "height": 7, "finish": "charcoal steel", "confidence": "stated size; moved to the right end wall in Rev. J" },
+      { "id": "service", "label": "Service door", "type": "swing, opens out under lean-to", "wall": "north", "from": [18.7, 0], "to": [21.5, 0], "width": 2.83, "height": 6.67, "curbIn": 4, "confidence": "width drawn (about 2'-10\"); height assumed 6'-8\"" },
+      { "id": "storage", "label": "Storage door", "type": "swing, opens onto porch", "wall": "south-east", "from": [24.5, 8], "to": [27.5, 8], "width": 3, "height": 7, "finish": "stained wood with glass panel", "confidence": "drawn" },
+      { "id": "bath", "label": "Bath door", "type": "swing, opens onto porch", "wall": "south-west", "from": [2.5, 8], "to": [5.5, 8], "width": 3, "height": 7, "finish": "stained wood with glass panel", "confidence": "drawn" }
     ],
 
     "windows": [
-      { "id": "bath-east", "label": "Bath window (high)", "wall": "east", "from": [30, 0.85], "to": [30, 7.15], "width": 6.3, "height": 1.85, "sillHeight": 5.45, "trim": "white", "confidence": "drawn (elevation sketch only, not dimensioned)" }
+      { "id": "bath-end", "label": "Bath window (high)", "wall": "west", "from": [0, 0.85], "to": [0, 7.15], "width": 6.3, "height": 1.85, "sillHeight": 5.45, "trim": "white", "confidence": "drawn (elevation sketch only, not dimensioned)" }
     ],
 
     "porch": {
@@ -115,14 +120,31 @@
     "confidence": "stated: size, gravel, metal 3:12. Roof heights drawn."
   },
 
-  "rinseStation": {
-    "label": "Rinse station",
-    "pad": [[30, 3], [35, 3], [35, 7], [30, 7]],
-    "size": [5, 4],
-    "surface": "concrete, sloped away from building",
-    "fixtures": ["wall-mounted shower column", "hose bib"],
-    "backerPanel": { "width": 2.85, "height": 3.85, "finish": "stained wood" },
-    "confidence": "stated"
+  "rinseStation": null,
+
+  "rainwater": {
+    "label": "Rainwater harvesting",
+    "collects": "pool house hip roof and lean-to roof, about 1,340 sq ft, roughly 835 gallons per inch of rain",
+    "gutters": { "widthIn": 6, "eaves": "all four pool house eaves and the low edge of the lean-to" },
+    "downspouts": [
+      { "at": [-0.25, 0.4], "top": 8.3, "from": [-2.3, 0.4] },
+      { "at": [-0.25, 25.6], "top": 8.3, "from": [-2.3, 25.6] },
+      { "at": [30.25, 0.4], "top": 8.3, "from": [32.3, 0.4] },
+      { "at": [30.25, 25.6], "top": 8.3, "from": [32.3, 25.6] },
+      { "at": [0.4, -10.25], "top": 6.2, "from": [0.4, -10.9] },
+      { "at": [29.6, -10.25], "top": 6.2, "from": [29.6, -10.9] }
+    ],
+    "tank": {
+      "type": "underground cistern",
+      "side": "left of the pool house (facing it from the pool), outside the fence",
+      "capacityGallons": 1500,
+      "outline": [[-10, -4], [-5, -4], [-5, 9], [-10, 9]],
+      "size": [5, 13],
+      "accessLids": [[-7.5, -1], [-7.5, 6]],
+      "confidence": "placeholder size and exact spot - to be set by the builder"
+    },
+    "notShown": "underground pipes from the downspouts to the tank, the pump and controls",
+    "confidence": "added in Rev. J at Pam's request; details assumed"
   },
 
   "outdoorKitchen": {
@@ -140,7 +162,7 @@
     "note": "Guide only, not built geometry. Labeled 19'-0\" clear; drawn 18'-6\"."
   },
 
-  "overallFootprint": { "size": [35, 36], "note": "pool house + rinse pad + lean-to", "confidence": "stated" },
+  "overallFootprint": { "size": [30, 36], "note": "pool house + lean-to (rinse pad removed in Rev. J)", "confidence": "stated" },
 
   "layoutAlongYard": {
     "order": "pool house -> 4' deck -> pool (32' long) -> 8' deck -> house back porch, all on one center line",
@@ -181,7 +203,7 @@
     ],
     "gates": [
       { "id": "left", "at": [-1, 48], "width": 4 },
-      { "id": "right", "at": [33, 12], "width": 4, "note": "on the way to the rinse station" }
+      { "id": "right", "at": [33, 12], "width": 4 }
     ],
     "confidence": "assumed. Wanted, but no line given. Proposed along both long edges of the deck, tying into the house and the pool house's enclosed back section."
   },

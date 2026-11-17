@@ -4,3 +4,5 @@ dist/
 # family photos and drawings stay on this computer unless Lindsay says otherwise
 Photos/
 Drawings/
+guide-pictures/
+*.pdf

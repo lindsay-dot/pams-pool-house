@@ -67,6 +67,13 @@ export function buildDimensions(site) {
   const gate = site.fence.gates[0];
   label(`Fence ${ftIn(site.fence.height)} high`, V(gate.at[0], site.fence.height + 1.2, gate.at[1] + 8));
 
+  // rainwater tank: underground, so its outline only shows with the measurements
+  if (site.rainwater) {
+    const tk = site.rainwater.tank, o = tk.outline, ty = -0.2;
+    for (let i = 0; i < 4; i++) pts.push(V(o[i][0], ty, o[i][1]), V(o[(i + 1) % 4][0], ty, o[(i + 1) % 4][1]));
+    label(`Rainwater tank (underground) · ${tk.capacityGallons.toLocaleString('en-US')} gallons · ${ftIn(tk.size[0])} × ${ftIn(tk.size[1])}`, V((o[0][0] + o[2][0]) / 2, 1.2, (o[0][1] + o[2][1]) / 2));
+  }
+
   const lines = new THREE.LineSegments(
     new THREE.BufferGeometry().setFromPoints(pts),
     new THREE.LineBasicMaterial({ color: 0x10202b, depthTest: false, transparent: true }),
