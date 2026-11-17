@@ -1,7 +1,7 @@
 {
   "meta": {
-    "name": "Mom's Backyard",
-    "status": "DRAFT 2 - awaiting review (Stage 0)",
+    "name": "Pam's Pool House",
+    "status": "LOCKED - approved by Lindsay 2026-11-16. Change only through the Layout tab.",
     "units": "feet (decimal). 12.5 = 12' 6\"",
     "source": "Drawings/pool-house-schematic-revI-1.html (Pool House - Schematic, Rev. I)",
     "coordinates": "Origin = outside NW corner of the pool house slab. x runs along the 30' side toward the drawing's east (right side of the floor plan). y runs toward the pool (drawing's south, bottom of the floor plan). Heights (z) are measured up from the top of the slab.",
@@ -10,7 +10,7 @@
 
   "compass": {
     "northIsUpOnPlan": true,
-    "confidence": "needs_input",
+    "confidence": "unknown - sun position is a display choice, adjustable later",
     "note": "The drawing labels the right side EAST and also calls it the 'Sunset End' with the setting sun drawn there. The sun sets in the WEST, so one of the two is wrong. Layout is unaffected; only sun direction and shadows depend on this."
   },
 
@@ -157,8 +157,9 @@
     "steps": { "end": "house end", "outline": [[11, 58], [19, 58], [19, 62], [11, 62]], "treads": 4, "confidence": "location stated; size and shape assumed (8' wide, centered)" },
     "depthShallow": 3.5,
     "depthDeep": 6,
+    "waterBelowDeckIn": 6,
     "deepEnd": "pool house end",
-    "confidence": "stated: rectangle, 16' x 32', steps at house end. From photos: long side runs away from the house. Assumed: depths, step size."
+    "confidence": "stated: rectangle, 16' x 32', steps at house end. Approved: depths, 8' centered steps, long side running away from the house."
   },
 
   "poolDeck": {
@@ -171,12 +172,12 @@
   },
 
   "fence": {
-    "status": "proposed",
+    "status": "approved line",
     "height": 4,
     "style": "black aluminum picket",
     "runs": [
       [[-1, 70], [-1, 8], [0, 8]],
-      [[33, 70], [33, 8], [30, 8]]
+      [[29, 70], [33, 70], [33, 8], [30, 8]]
     ],
     "gates": [
       { "id": "left", "at": [-1, 48], "width": 4 },
@@ -196,7 +197,7 @@
     "role": "backdrop only - not a measured drawing",
     "backPorch": { "outline": [[1, 70], [29, 70], [29, 78], [1, 78]], "size": [28, 8], "floorHeight": 1.17, "steps": 2, "posts": { "count": 4, "color": "dark bronze / black" }, "ceilingHeight": 9 },
     "wing": { "outline": [[-23, 70], [1, 70], [1, 78], [-23, 78]], "note": "projects toward the pool on the left side (from the house)" },
-    "body": { "outline": [[-23, 78], [39, 78], [39, 118], [-23, 118]] },
+    "body": { "outline": [[-23, 78], [30, 78], [30, 112], [-23, 112]] },
     "wallHeight": 10,
     "confidence": "estimated from photos. Only fixed fact: the back porch edge is 8' from the pool and centered on it.",
     "styleFromPhotos": {

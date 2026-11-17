@@ -83,7 +83,7 @@ for (const g of site.fence.gates) {
 }
 text(-1.8, 48.3, 'GATE', 'note', 'text-anchor="end"');
 text(33.8, 12.3, 'GATE', 'note');
-text(-1.8, 58, `FENCE (proposed) · ${ftIn(site.fence.height)} high`, 'note', 'text-anchor="end"');
+text(-1.8, 58, `FENCE · ${ftIn(site.fence.height)} high`, 'note', 'text-anchor="end"');
 
 // --- lean-to --------------------------------------------------------------
 box(site.leanTo.outline, 'class="gravel"');

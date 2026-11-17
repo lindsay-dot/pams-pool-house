@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Pam's Pool House</title>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="view" aria-label="3D view of the backyard"></canvas>
+    <h1 id="title">Pam's Pool House</h1>
+    <p id="hint"></p>
+    <nav id="views" aria-label="Choose a view">
+      <button type="button" data-view="orbit">Look Around</button>
+      <button type="button" data-view="above">From Above</button>
+      <button type="button" data-view="stand">Stand on the Deck</button>
+      <span class="gap" aria-hidden="true"></span>
+      <button type="button" id="dims" aria-pressed="false">Show Measurements</button>
+    </nav>
+    <div id="loading">Loading the backyard…</div>
+  </div>
+  <script>
+    // ?selftest puts a pass/fail line in the tab title so the app can be checked in any browser
+    window.SELFTEST = location.search.includes('selftest');
+    if (window.SELFTEST) {
+      addEventListener('error', function (e) { document.title = 'SELFTEST ERROR: ' + (e.message || 'script failed to load'); }, true);
+      addEventListener('unhandledrejection', function (e) { document.title = 'SELFTEST ERROR: ' + e.reason; });
+    }
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

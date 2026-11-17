@@ -1,0 +1,62 @@
+:root {
+  --ink: #1d2a33;
+  --paper: #fbfaf6;
+  --accent: #1f6f8b;
+  --accent-ink: #ffffff;
+  --line: #cfd6d9;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #b9d3e2; color: var(--ink); }
+#stage { position: fixed; inset: 0; }
+#view { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+#title {
+  position: absolute; top: 18px; left: 22px; margin: 0;
+  padding: 10px 18px; border-radius: 14px;
+  background: rgba(251, 250, 246, 0.92); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  font-size: 24px; font-weight: 700; letter-spacing: 0.01em;
+}
+#views {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+  width: max-content; max-width: calc(100% - 24px);
+  padding: 12px; border-radius: 20px;
+  background: rgba(251, 250, 246, 0.92); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+}
+#views button {
+  font: inherit; font-size: 19px; font-weight: 600; color: var(--ink);
+  min-height: 56px; padding: 12px 22px; border-radius: 14px;
+  border: 2px solid var(--line); background: #fff; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#views button:hover { border-color: var(--accent); }
+#views button:focus-visible { outline: 3px solid #f2b63c; outline-offset: 2px; }
+#views button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+#views .gap { width: 2px; background: var(--line); margin: 4px 2px; }
+
+#hint {
+  position: absolute; left: 50%; bottom: 112px; transform: translateX(-50%);
+  margin: 0; padding: 8px 16px; border-radius: 999px; max-width: calc(100% - 24px);
+  background: rgba(29, 42, 51, 0.78); color: #fff; font-size: 16px; text-align: center;
+}
+#loading {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: #dfe9ee; font-size: 22px; font-weight: 600;
+}
+
+.dim-label {
+  padding: 3px 9px; border-radius: 8px; white-space: nowrap;
+  background: rgba(255, 255, 255, 0.94); border: 1.5px solid #10202b; color: #10202b;
+  font-size: 15px; font-weight: 700;
+}
+.dim-label.big { font-size: 18px; background: #10202b; color: #fff; }
+.dim-label.soft { border-color: transparent; background: rgba(255, 255, 255, 0.8); font-weight: 600; }
+
+@media (max-width: 760px) {
+  #title { font-size: 19px; top: 12px; left: 12px; }
+  #views button { font-size: 17px; padding: 10px 14px; min-height: 52px; }
+  #views .gap { display: none; }
+  #hint { bottom: 170px; font-size: 14px; }
+}
