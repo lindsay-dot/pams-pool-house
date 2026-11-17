@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "Mom's Backyard",
-    "status": "DRAFT - awaiting review (Stage 0)",
+    "status": "DRAFT 2 - awaiting review (Stage 0)",
     "units": "feet (decimal). 12.5 = 12' 6\"",
     "source": "Drawings/pool-house-schematic-revI-1.html (Pool House - Schematic, Rev. I)",
     "coordinates": "Origin = outside NW corner of the pool house slab. x runs along the 30' side toward the drawing's east (right side of the floor plan). y runs toward the pool (drawing's south, bottom of the floor plan). Heights (z) are measured up from the top of the slab.",
@@ -142,34 +142,72 @@
 
   "overallFootprint": { "size": [35, 36], "note": "pool house + rinse pad + lean-to", "confidence": "stated" },
 
-  "pool": {
-    "confidence": "needs_input",
-    "outline": null,
-    "shape": null,
-    "depthShallow": null,
-    "depthDeep": null,
-    "steps": null,
-    "distanceFromPorch": null,
-    "note": "Not on the drawings. Only known: it is on the open porch side (bottom of the floor plan), and the walk from pool to rinse station comes around the right-hand side."
+  "layoutAlongYard": {
+    "order": "pool house -> 4' deck -> pool (32' long) -> 8' deck -> house back porch, all on one center line",
+    "centerLineX": 15,
+    "confidence": "stated by Lindsay: pool directly behind the house, pool house directly behind the pool"
   },
 
-  "poolDeck": { "confidence": "needs_input", "outline": null, "note": "Not on the drawings." },
+  "pool": {
+    "status": "existing (in photos, under a winter cover)",
+    "shape": "rectangle",
+    "size": [16, 32],
+    "outline": [[7, 30], [23, 30], [23, 62], [7, 62]],
+    "longSide": "runs away from the house (the 16' end faces the house)",
+    "steps": { "end": "house end", "outline": [[11, 58], [19, 58], [19, 62], [11, 62]], "treads": 4, "confidence": "location stated; size and shape assumed (8' wide, centered)" },
+    "depthShallow": 3.5,
+    "depthDeep": 6,
+    "deepEnd": "pool house end",
+    "confidence": "stated: rectangle, 16' x 32', steps at house end. From photos: long side runs away from the house. Assumed: depths, step size."
+  },
 
-  "lawn": { "confidence": "needs_input", "outline": null, "note": "Not on the drawings. Property / back yard size and any fence unknown." },
+  "poolDeck": {
+    "status": "existing concrete",
+    "outline": [[-1, 26], [33, 26], [33, 70], [-1, 70]],
+    "size": [34, 44],
+    "widths": { "houseSide": 8, "leftFromHouse": 8, "rightFromHouse": 10, "poolHouseSide": 4 },
+    "trenchDrain": { "from": [1, 69.5], "to": [29, 69.5], "note": "along the foot of the back porch steps" },
+    "confidence": "stated widths. Assumed: the 4' back strip of deck meets the pool house porch slab with no gap."
+  },
+
+  "fence": {
+    "status": "proposed",
+    "height": 4,
+    "style": "black aluminum picket",
+    "runs": [
+      [[-1, 70], [-1, 8], [0, 8]],
+      [[33, 70], [33, 8], [30, 8]]
+    ],
+    "gates": [
+      { "id": "left", "at": [-1, 48], "width": 4 },
+      { "id": "right", "at": [33, 12], "width": 4, "note": "on the way to the rinse station" }
+    ],
+    "confidence": "assumed. Wanted, but no line given. Proposed along both long edges of the deck, tying into the house and the pool house's enclosed back section."
+  },
+
+  "lawn": {
+    "outline": [[-135, -110], [165, -110], [165, 190], [-135, 190]],
+    "size": [300, 300],
+    "note": "Open acreage. Shown as 300' x 300' of grass around the site with a tree line beyond. Playhouse and pool equipment seen in the photos on the left side (from the house) are not modeled.",
+    "confidence": "stated: effectively unlimited"
+  },
 
   "existingHouse": {
-    "confidence": "needs_input",
-    "outline": null,
-    "positionRelativeToPoolHouse": null,
+    "role": "backdrop only - not a measured drawing",
+    "backPorch": { "outline": [[1, 70], [29, 70], [29, 78], [1, 78]], "size": [28, 8], "floorHeight": 1.17, "steps": 2, "posts": { "count": 4, "color": "dark bronze / black" }, "ceilingHeight": 9 },
+    "wing": { "outline": [[-23, 70], [1, 70], [1, 78], [-23, 78]], "note": "projects toward the pool on the left side (from the house)" },
+    "body": { "outline": [[-23, 78], [39, 78], [39, 118], [-23, 118]] },
+    "wallHeight": 10,
+    "confidence": "estimated from photos. Only fixed fact: the back porch edge is 8' from the pool and centered on it.",
     "styleFromPhotos": {
       "siding": "warm white vertical board-and-batten",
-      "brick": "dark charcoal-brown brick base, about 3' high, brick porch and steps",
-      "roof": "hip roof, dark brown-charcoal architectural shingles, shed dormer with three windows",
+      "brickFront": "dark charcoal-brown brick base, about 3' high",
+      "brickBack": "red-orange blend brick with light mortar on the back porch floor, steps and base",
+      "roof": "hip roof, dark brown-charcoal architectural shingles, shed dormer with three windows on the front",
       "trim": "white trim, fascia, gutters and downspouts",
-      "columns": "square painted columns on the front porch",
-      "doors": "dark stained wood double front door with glass",
-      "lights": "black lantern sconces"
-    },
-    "note": "Photos show the front and sides only. Footprint and where it sits relative to the pool house are unknown."
+      "columns": "front: square painted columns. Back porch: dark posts",
+      "doors": "front: dark stained wood double door with glass. Back: white French doors",
+      "lights": "black lantern sconces in front; recessed soffit lights at the back"
+    }
   }
 }

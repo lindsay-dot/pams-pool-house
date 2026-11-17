@@ -8,7 +8,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const site = JSON.parse(readFileSync(join(root, 'site.json'), 'utf8'));
 
 const S = 17;                     // pixels per foot
-const X0 = -13, Y0 = -15, X1 = 47, Y1 = 52;
+const X0 = -26, Y0 = -18, X1 = 47, Y1 = 87;
 const px = (x) => (x - X0) * S;
 const py = (y) => (y - Y0) * S;
 const W = (X1 - X0) * S, H = (Y1 - Y0) * S;
@@ -46,11 +46,44 @@ function dim(a, b, label) {
 
 const ph = site.poolHouse;
 
-// --- unknown pool / deck area -------------------------------------------
-rect([-11, 36.5], [45, 50.5], 'class="unknown"');
-text(18, 42, 'POOL + POOL DECK', 'big', 'text-anchor="middle"');
-text(18, 43.8, 'Not on the drawings — shape, size, depth and distance from the porch needed', 'note', 'text-anchor="middle"');
-text(18, 45.3, '(lawn / back property and the existing house position are also not on the drawings)', 'note', 'text-anchor="middle"');
+// --- existing house (backdrop, estimated) ---------------------------------
+const hs = site.existingHouse;
+rect([hs.body.outline[0][0], 78], [hs.body.outline[1][0], 86], 'class="house"');
+box(hs.wing.outline, 'class="house"');
+box(hs.backPorch.outline, 'class="hporch"');
+text(15, 74.5, 'HOUSE BACK PORCH', 'lbl', 'text-anchor="middle"');
+text(15, 75.7, 'estimated from photos', 'note', 'text-anchor="middle"');
+text(8, 82.5, 'EXISTING HOUSE (continues) — backdrop only, estimated from photos', 'lbl', 'text-anchor="middle"');
+text(-11, 74.5, 'HOUSE WING', 'lbl', 'text-anchor="middle"');
+
+// --- deck, pool -----------------------------------------------------------
+box(site.poolDeck.outline, 'class="deck"');
+box(site.pool.outline, 'class="pool"');
+box(site.pool.steps.outline, 'class="steps"');
+text(15, 60.4, 'STEPS', 'note', 'text-anchor="middle"');
+text(15, 44, 'POOL', 'big', 'text-anchor="middle"');
+text(15, 45.5, `${ftIn(16)} × ${ftIn(32)}`, 'lbl', 'text-anchor="middle"');
+text(15, 34, `deep end ${ftIn(site.pool.depthDeep)} (assumed)`, 'note', 'text-anchor="middle"');
+text(15, 56.5, `shallow end ${ftIn(site.pool.depthShallow)} (assumed)`, 'note', 'text-anchor="middle"');
+text(-0.5, 67.5, 'CONCRETE POOL DECK', 'lbl');
+text(-0.5, 68.7, `${ftIn(34)} × ${ftIn(44)}`, 'note');
+dim([7, 51], [23, 51], ftIn(16));
+dim([20.5, 30], [20.5, 62], ftIn(32));
+dim([-1, 40], [7, 40], ftIn(8));
+dim([23, 40], [33, 40], ftIn(10));
+dim([26.5, 26], [26.5, 30], ftIn(4));
+dim([26.5, 62], [26.5, 70], ftIn(8));
+dim([41.5, 26], [41.5, 70], `${ftIn(44)} deck`);
+
+// --- fence (proposed) -----------------------------------------------------
+for (const run of site.fence.runs)
+  add(`<polyline points="${run.map((p) => `${px(p[0])},${py(p[1])}`).join(' ')}" class="fence"/>`);
+for (const g of site.fence.gates) {
+  rect([g.at[0] - 0.3, g.at[1] - 2], [g.at[0] + 0.3, g.at[1] + 2], 'class="gate"');
+}
+text(-1.8, 48.3, 'GATE', 'note', 'text-anchor="end"');
+text(33.8, 12.3, 'GATE', 'note');
+text(-1.8, 58, `FENCE (proposed) · ${ftIn(site.fence.height)} high`, 'note', 'text-anchor="end"');
 
 // --- lean-to --------------------------------------------------------------
 box(site.leanTo.outline, 'class="gravel"');
@@ -120,13 +153,14 @@ const r0 = ph.roof.ridge.from, r1 = ph.roof.ridge.to, e = ph.roof.eaveOutline;
 line(r0, r1, 'class="roof"');
 line(e[0], r0, 'class="roof"'); line(e[3], r0, 'class="roof"');
 line(e[1], r1, 'class="roof"'); line(e[2], r1, 'class="roof"');
-text(-1.8, 28.9, `Roof edge (dashed): hip roof, 8:12, ${ftIn(2)} overhang all around`, 'note');
+text(33.6, 24.6, `Roof edge (dashed):`, 'note');
+text(33.6, 25.6, `hip, 8:12, ${ftIn(2)} overhang`, 'note');
 text(17.4, 13.3, `ridge ${ftIn(ph.roof.ridgeHeight)}`, 'note');
 
 // --- dimensions -----------------------------------------------------------
-dim([0, 31.2], [10, 31.2], ftIn(10)); dim([10, 31.2], [20, 31.2], ftIn(10)); dim([20, 31.2], [30, 31.2], ftIn(10));
-dim([0, 33], [30, 33], `${ftIn(30)} pool house`);
-dim([0, 34.8], [35, 34.8], `${ftIn(35)} overall`);
+dim([0, -11.6], [10, -11.6], ftIn(10)); dim([10, -11.6], [20, -11.6], ftIn(10)); dim([20, -11.6], [30, -11.6], ftIn(10));
+dim([0, -13.6], [30, -13.6], `${ftIn(30)} pool house`);
+dim([0, -15.6], [35, -15.6], `${ftIn(35)} overall`);
 dim([-9.5, -10], [-9.5, 0], `${ftIn(10)} lean-to`);
 dim([-9.5, 0], [-9.5, 8], ftIn(8));
 dim([-9.5, 8], [-9.5, 26], `${ftIn(18)} porch`);
@@ -163,7 +197,7 @@ const html = `<!doctype html>
   .col{fill:#3B3936;stroke:#1E2328;stroke-width:1}
   .roof{fill:none;stroke:#804A3C;stroke-width:1.2;stroke-dasharray:7 5}
   .guide{fill:none;stroke:#C9922F;stroke-width:1;stroke-dasharray:4 4}
-  .unknown{fill:#DCE9EF;stroke:#4A7FA0;stroke-width:2;stroke-dasharray:10 7}
+  .deck{fill:#DAD7CC;stroke:#1E2328;stroke-width:1.5}.pool{fill:#8CC4DA;stroke:#1E2328;stroke-width:2}.steps{fill:#B9DCE8;stroke:#4A7FA0;stroke-width:1}.house{fill:#EFEDE4;stroke:#5C6570;stroke-width:1.5;stroke-dasharray:8 5}.hporch{fill:#C99A84;stroke:#5C6570;stroke-width:1.5}.fence{fill:none;stroke:#2E7D4F;stroke-width:2.5;stroke-dasharray:3 4}.gate{fill:#2E7D4F}
   .dim{stroke:#5C6570;stroke-width:1;fill:none}
   text{fill:#1E2328}.lbl{font-size:12px;font-weight:700;letter-spacing:.06em}
   .big{font-size:16px;font-weight:700;letter-spacing:.1em}
@@ -172,7 +206,7 @@ const html = `<!doctype html>
   .key span{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin:0 6px 0 16px;border:1px solid #1E2328}
 </style></head><body>
 <h1>Stage 0 — Top-down plan (drawn from site.json)</h1>
-<p>Source: Pool House Schematic, Rev. I. Pool side is at the bottom. Blue dashed area = not on the drawings.</p>
+<p>Source: Pool House Schematic, Rev. I. Pool house from the Rev. I drawing; pool, deck and layout from Lindsay's notes; house and fence are estimates.</p>
 <div class="sheet"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top-down site plan with dimensions">
 ${out.join('\n')}
 </svg></div>
