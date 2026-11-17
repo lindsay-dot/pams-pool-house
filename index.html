@@ -9,7 +9,12 @@
 <body>
   <div id="stage">
     <canvas id="view" aria-label="3D view of the backyard"></canvas>
-    <h1 id="title">Pam's Pool House</h1>
+    <h1 id="title">Pam's Pool House <span id="designName"></span></h1>
+    <div id="comparebar" hidden>
+      <span class="cname" id="cmpA"></span>
+      <button type="button" id="cmpDone">Done Comparing</button>
+      <span class="cname" id="cmpB"></span>
+    </div>
     <div id="warnings" role="status" aria-live="polite" hidden></div>
     <p id="hint"></p>
     <div id="selbar" hidden>

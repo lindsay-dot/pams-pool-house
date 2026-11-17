@@ -244,6 +244,7 @@ export const TABS = [
   { id: 'house', name: 'Pool House' },
   { id: 'kitchen', name: 'Kitchen' },
   { id: 'furniture', name: 'Furniture' },
+  { id: 'designs', name: 'My Designs' },
 ];
 
 /** Little top-down pictures of the four kitchen shapes. */

@@ -57,6 +57,18 @@ export function createViews(camera, dom, getSite) {
       const s = spots[spot];
       fly(new THREE.Vector3(s.pos[0], EYE, s.pos[1]), new THREE.Vector3(...s.look), 'stand');
     },
+    /** Camera spots for "download all pictures". */
+    shots() {
+      const { cx, cz, centre, spots } = geo();
+      const V = (x, y, z) => new THREE.Vector3(x, y, z);
+      return [
+        { name: 'Look-Around', pos: V(cx + 62, 34, cz + 6), target: centre },
+        { name: 'From-Above', pos: V(cx, 135, cz + 5), target: V(cx, 0, cz - 7) },
+        ...spots.map((s) => ({ name: `Standing-${s.name.replace(/\s+/g, '-')}`, pos: V(s.pos[0], EYE, s.pos[1]), target: V(...s.look) })),
+        { name: 'Kitchen', pos: V(19, 8, 27), target: V(5, 2.5, 18) },
+        { name: 'Fireplace', pos: V(cx, EYE, 24.5), target: V(cx, 5, 8) },
+      ];
+    },
     update(dt) {
       if (tween) {
         tween.t = Math.min(1, tween.t + dt / 1.1);

@@ -16,7 +16,7 @@ const el = (tag, props = {}, kids = []) => {
   return n;
 };
 
-export function createPanel(root, { store, layout, furniture }) {
+export function createPanel(root, { store, layout, furniture, actions }) {
   let tab = TABS[0].id, showLayout = false;
 
   const tabs = el('div', { class: 'tabs', role: 'tablist' });
@@ -76,7 +76,71 @@ export function createPanel(root, { store, layout, furniture }) {
     ];
   }
 
+  const when = (t) => new Date(t).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const btn = (text, onclick, cls = 'big') => el('button', { type: 'button', class: cls, text, onclick });
+  let note = '';
+  const say = (text) => { note = text; render(); };
+
+  function renderDesigns() {
+    const all = store.designs(), others = all.filter((d) => !d.current), versions = store.versions();
+    body.replaceChildren();
+
+    const name = el('input', { type: 'text', class: 'textin', maxlength: '40', value: store.currentName(), 'aria-label': 'Name of this design' });
+    name.addEventListener('change', () => store.rename(name.value));
+    body.append(el('section', {}, [
+      el('h2', { text: 'This design' }),
+      el('p', { class: 'picked', text: 'Everything is saved for you as you go. Type a new name any time.' }),
+      name,
+      el('div', { class: 'row gapTop' }, [btn('New Design', () => store.create('New Design')), btn('Make a Copy', () => store.copy(), 'big quiet')]),
+    ]));
+
+    const list = el('div', { class: 'list' });
+    for (const d of all) {
+      list.append(el('div', { class: `rowbtn plain${d.current ? ' on' : ''}` }, [
+        el('span', { class: 'grow' }, [el('strong', { text: d.name }), el('span', { class: 'note block', text: d.current ? 'Open now' : `Last changed ${when(d.updated)}` })]),
+        d.current ? null : btn('Open', () => store.open(d.id), 'add'),
+        d.current || !others.length ? null : btn('Compare', () => actions.compare(d.id), 'add quiet'),
+        all.length > 1 ? btn('Delete', () => { if (window.confirm(`Delete “${d.name}”? This cannot be undone.`)) store.remove(d.id); }, 'add quiet') : null,
+      ]));
+    }
+    body.append(el('section', {}, [
+      el('h2', { text: `All designs (${all.length})` }),
+      el('p', { class: 'picked', text: others.length ? 'Press Compare to see one next to the design that is open.' : 'Make a second design to compare two looks side by side.' }),
+      list,
+      actions.comparing() ? el('div', { class: 'row gapTop' }, [btn('Done Comparing', () => actions.endCompare())]) : null,
+    ]));
+
+    const vlist = el('div', { class: 'list' });
+    for (const v of versions.slice(0, 12)) {
+      vlist.append(el('div', { class: 'rowbtn plain' }, [el('span', { class: 'grow', text: when(v.t) }), btn('Go Back to This', () => store.restore(v.index), 'add quiet')]));
+    }
+    body.append(el('section', {}, [
+      el('h2', { text: 'Earlier versions' }),
+      el('p', { class: 'picked', text: versions.length ? 'Saved automatically while you work. Going back can be undone.' : 'None yet. They are saved automatically every few minutes while you work.' }),
+      versions.length ? vlist : null,
+    ]));
+
+    body.append(el('section', {}, [
+      el('h2', { text: 'Pictures' }),
+      el('p', { class: 'picked', text: 'High-resolution pictures to print or share.' }),
+      el('div', { class: 'row' }, [
+        btn('Download This View', async () => { say('Making the picture…'); say(await actions.downloadView()); }),
+        btn('Download All Pictures', async () => { say('Making the pictures…'); say(await actions.downloadAll((t) => { note = t; const n = body.querySelector('.status'); if (n) n.textContent = t; })); }, 'big quiet'),
+      ]),
+    ]));
+    body.append(el('section', {}, [
+      el('h2', { text: 'Back up or move a design' }),
+      el('p', { class: 'picked', text: 'Save a design to a file, then open that file on the iPad or the iMac.' }),
+      el('div', { class: 'row' }, [
+        btn('Save to File', () => say(actions.saveFile())),
+        btn('Open File', async () => say(await actions.openFile()), 'big quiet'),
+      ]),
+      el('p', { class: 'status', role: 'status', text: note }),
+    ]));
+  }
+
   function renderFinishes() {
+    if (tab === 'designs') return renderDesigns();
     const d = store.get();
     body.replaceChildren();
     for (const g of panelGroups(d).filter((x) => x.tab === tab)) {
@@ -132,7 +196,7 @@ export function createPanel(root, { store, layout, furniture }) {
     const keep = body.scrollTop;
     tabs.replaceChildren(...TABS.map((t) => el('button', {
       type: 'button', role: 'tab', 'aria-selected': String(!showLayout && t.id === tab), class: !showLayout && t.id === tab ? 'on' : '', text: t.name,
-      onclick: () => { tab = t.id; showLayout = false; render(); body.scrollTop = 0; },
+      onclick: () => { tab = t.id; showLayout = false; note = ''; render(); body.scrollTop = 0; },
     })));
     undoBtn.disabled = !store.canUndo();
     undoBtn.hidden = overBtn.hidden = showLayout;

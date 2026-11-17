@@ -17,6 +17,7 @@ import { kitchenPlan, buildKitchen } from './kitchen.js';
 import { buildItem, positionItem, startingSpot, furnitureDef } from './furniture.js';
 import { checkDesign } from './checks.js';
 import { createInteraction } from './interact.js';
+import { saveBlob, fileSafe, zip, pickJsonFile } from './files.js';
 
 const wrap = document.getElementById('stage');
 const canvas = document.getElementById('view');
@@ -129,18 +130,86 @@ function showSelection() {
   document.getElementById('hint').hidden = !!it;
   if (it) selName.textContent = itemTitle(it.type);
 }
+function makeDynamic(d) {
+  const p = kitchenPlan(site, d.kitchen), root = new THREE.Group(), g = new THREE.Group();
+  for (const it of d.items) root.add(buildItem(it, site, M));
+  g.add(buildKitchen(site, d.kitchen, p, M), root);
+  return { g, p, root };
+}
+function clearGroup(g) {
+  g.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+  g.clear();
+}
 function rebuildDynamic() {
-  const d = store.get();
-  dyn.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
-  dyn.clear();
-  plan = kitchenPlan(site, d.kitchen);
-  itemsRoot = new THREE.Group();
-  for (const it of d.items) itemsRoot.add(buildItem(it, site, M));
-  dyn.add(buildKitchen(site, d.kitchen, plan, M), itemsRoot);
+  clearGroup(dyn);
+  const m = makeDynamic(store.get());
+  plan = m.p; itemsRoot = m.root;
+  dyn.add(m.g);
   showSelection();
   showChecks();
   refreshShadows();
+  document.getElementById('designName').textContent = store.currentName();
+  compare.refresh();
 }
+
+// --- compare two designs side by side: same camera, left = the open design ------------
+const compare = {
+  on: false, otherId: null, dirty: true, group: new THREE.Group(), last: '',
+  start(id) {
+    if (!store.designById(id) || id === store.currentId()) return;
+    this.otherId = id; this.on = true;
+    selectedId = null; showSelection();
+    document.body.classList.add('comparing');
+    document.getElementById('comparebar').hidden = false;
+    this.refresh();
+    panel?.render();
+  },
+  stop() {
+    if (!this.on) return;
+    this.on = false;
+    clearGroup(this.group);
+    this.group.visible = false; dyn.visible = true;
+    document.body.classList.remove('comparing');
+    document.getElementById('comparebar').hidden = true;
+    renderer.setScissorTest(false);
+    applyDesign(store.get(), M);
+    resize();
+    refreshShadows();
+    panel?.render();
+  },
+  refresh() {
+    if (!this.on) return;
+    const other = store.designById(this.otherId);
+    if (!other || other.id === store.currentId()) { this.stop(); return; }
+    clearGroup(this.group);
+    this.group.add(makeDynamic(other.design).g);
+    document.getElementById('cmpA').textContent = store.currentName();
+    document.getElementById('cmpB').textContent = other.name;
+    this.dirty = true;
+  },
+  render() {
+    // only redraw when the camera or a design changed; each side needs its own shadows
+    const key = camera.position.toArray().concat(camera.quaternion.toArray()).map((v) => v.toFixed(4)).join();
+    if (!this.dirty && key === this.last) return;
+    this.dirty = false; this.last = key;
+    const size = renderer.getSize(new THREE.Vector2()), half = Math.floor(size.x / 2);
+    camera.aspect = half / size.y; camera.updateProjectionMatrix();
+    renderer.setScissorTest(true);
+    const sides = [[store.get(), dyn], [store.designById(this.otherId).design, this.group]];
+    sides.forEach(([design, group], i) => {
+      applyDesign(design, M);
+      dyn.visible = group === dyn; this.group.visible = group === this.group;
+      sun.shadow.needsUpdate = true;
+      renderer.setViewport(i * half, 0, half, size.y); renderer.setScissor(i * half, 0, half, size.y);
+      renderer.render(scene, camera);
+    });
+    applyDesign(store.get(), M);
+    dyn.visible = true; this.group.visible = false;
+  },
+};
+compare.group.visible = false;
+scene.add(compare.group);
+document.getElementById('cmpDone').addEventListener('click', () => compare.stop());
 rebuildSite();
 applyDesign(store.get(), M);
 store.subscribe((d) => { applyDesign(d, M); rebuildDynamic(); });
@@ -204,7 +273,66 @@ const layout = {
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   },
 };
-panel = createPanel(document.getElementById('panel'), { store, layout, furniture });
+// --- pictures and files -----------------------------------------------------------------
+const PICTURE_WIDTH = navigator.maxTouchPoints > 1 ? 2560 : 3840;
+/** Draw one high-resolution picture. shot = { pos, target } or nothing for the view on screen. */
+function capture(shot) {
+  const size = renderer.getSize(new THREE.Vector2()), ratio = renderer.getPixelRatio();
+  // as wide as PICTURE_WIDTH, but never taller than 2400 (keeps tall iPad views within Safari's limits)
+  let W = PICTURE_WIDTH, H = Math.round((W * size.y) / size.x);
+  if (H > 2400) { W = Math.round((2400 * size.x) / size.y); H = 2400; }
+  const cam = camera.clone();
+  if (shot) { cam.position.copy(shot.pos); cam.up.set(0, 1, 0); cam.lookAt(shot.target); }
+  cam.aspect = W / H; cam.updateProjectionMatrix();
+  const rings = [];
+  itemsRoot.traverse((o) => { if (o.name === 'ring' && o.visible) { rings.push(o); o.visible = false; } });
+  const dimsWere = dims.visible; dims.visible = false;
+  renderer.setScissorTest(false);
+  renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+  renderer.render(scene, cam);
+  const blob = new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+  renderer.setPixelRatio(ratio); renderer.setSize(size.x, size.y, false);
+  rings.forEach((o) => { o.visible = true; });
+  dims.visible = dimsWere;
+  compare.dirty = true;
+  return blob;
+}
+const tick = () => new Promise((r) => setTimeout(r, 30));
+const actions = {
+  compare: (id) => compare.start(id),
+  endCompare: () => compare.stop(),
+  comparing: () => compare.on,
+  async downloadView() {
+    compare.stop();
+    await tick();
+    const blob = await capture();
+    if (!blob) return 'Sorry, the picture could not be made.';
+    saveBlob(blob, `${fileSafe(store.currentName())}-view.jpg`);
+    return 'Picture saved to your Downloads.';
+  },
+  async downloadAll(progress) {
+    compare.stop();
+    const shots = views.shots(), files = [];
+    for (let i = 0; i < shots.length; i++) {
+      progress(`Making picture ${i + 1} of ${shots.length}…`);
+      await tick();
+      const blob = await capture(shots[i]);
+      if (blob) files.push({ name: `${String(i + 1).padStart(2, '0')}-${shots[i].name}.jpg`, blob });
+    }
+    if (!files.length) return 'Sorry, the pictures could not be made.';
+    saveBlob(await zip(files), `${fileSafe(store.currentName())}-pictures.zip`);
+    return `${files.length} pictures saved to your Downloads in one zip file.`;
+  },
+  saveFile() {
+    const blob = new Blob([JSON.stringify(store.toFile(), null, 2)], { type: 'application/json' });
+    saveBlob(blob, `${fileSafe(store.currentName())}.poolhouse.json`);
+    return 'Design saved to your Downloads.';
+  },
+  async openFile() {
+    try { return `Opened “${store.fromFile(await pickJsonFile())}”.`; } catch (err) { return err.message; }
+  },
+};
+panel = createPanel(document.getElementById('panel'), { store, layout, furniture, actions });
 
 // --- views and buttons -------------------------------------------------------------
 const views = createViews(camera, canvas, () => site);
@@ -235,8 +363,8 @@ const clampYard = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 createInteraction({
   canvas, camera, controls: views.controls,
   getItemsRoot: () => itemsRoot,
-  canDrag: () => views.mode !== 'stand',
-  onSelect: (id) => furniture.select(id),
+  canDrag: () => views.mode !== 'stand' && !compare.on,
+  onSelect: (id) => { if (!compare.on) furniture.select(id); },
   onDrag(id, group, x, z) {
     const moved = { ...store.get().items.find((i) => i.id === id), x: clampYard(x, -70, 100), z: clampYard(z, -40, 130) };
     positionItem(group, moved, site);
@@ -258,6 +386,7 @@ function resize() {
   labels.setSize(w, h);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
+  compare.dirty = true;
 }
 new ResizeObserver(resize).observe(wrap);
 resize();
@@ -269,8 +398,8 @@ renderer.setAnimationLoop(() => {
   views.update(dt);
   M.water.bumpMap.offset.x += dt * 0.012;
   M.water.bumpMap.offset.y += dt * 0.02;
-  renderer.render(scene, camera);
-  labels.render(scene, camera);
+  if (compare.on) compare.render();
+  else { renderer.render(scene, camera); labels.render(scene, camera); }
   if (window.SELFTEST && ++frames === 30) t0 = performance.now(); // skip start-up when timing
   if (window.SELFTEST && frames === 90) {
     // read a few pixels back to prove the picture is really being drawn
@@ -283,8 +412,13 @@ renderer.setAnimationLoop(() => {
     const info = renderer.info.render;
     const swatches = document.querySelectorAll('#panel .swatch').length;
     document.title = `SELFTEST OK webgl${renderer.capabilities.isWebGL2 ? 2 : 1} ${fps}fps draws=${info.calls} tris=${info.triangles} colors=${seen.size} glerr=${gl.getError()} swatches=${swatches} ${canvas.width}x${canvas.height}`;
+    // also prove a high-resolution picture can be made in this browser
+    capture().then(async (b) => {
+      const bmp = b ? await createImageBitmap(b) : null;
+      document.title += bmp ? ` picture=${bmp.width}x${bmp.height}/${Math.round(b.size / 1024)}KB designs=${store.designs().length}` : ' picture=FAILED';
+    }).catch((err) => { document.title += ` picture=FAILED(${err.message})`; });
   }
 });
 
 document.getElementById('loading')?.remove();
-window.__designer = { scene, camera, renderer, views, M, store, layout, furniture, refreshShadows, get site() { return site; }, get plan() { return plan; }, checks: () => checkDesign(site, store.get(), plan), furnitureDef };
+window.__designer = { scene, camera, renderer, views, M, store, layout, furniture, actions, compare, capture, refreshShadows, get site() { return site; }, get plan() { return plan; }, checks: () => checkDesign(site, store.get(), plan), furnitureDef };
