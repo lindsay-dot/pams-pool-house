@@ -63,17 +63,17 @@ export function buildHouse(site, M) {
     const x = px0 + 0.5 + ((px1 - px0 - 0.2) * i) / (n - 1);
     g.add(boxAt([x - 0.3, fl, floorZ + 0.2], [x + 0.3, ceil, floorZ + 0.8], M.housePost));
   }
-  g.add(boxAt([px0, ceil, pz0 - 1.4], [bx1 + 1.4, top, pz1], M.trim));
+  g.add(boxAt([px0, ceil, pz0 - 1.4], [bx1 + 1.4, top, pz1], M.houseTrim));
 
   // French doors and a window on the porch wall
-  g.add(boxAt([c - 4.2, fl, pz1 - 0.12], [c + 2.2, fl + 7, pz1], M.trim), boxAt([c - 3.9, fl + 0.5, pz1 - 0.16], [c - 1.15, fl + 6.7, pz1 - 0.12], M.glass), boxAt([c - 0.85, fl + 0.5, pz1 - 0.16], [c + 1.9, fl + 6.7, pz1 - 0.12], M.glass));
-  g.add(boxAt([c + 6, fl + 3, pz1 - 0.12], [c + 9.4, fl + 7, pz1], M.trim), boxAt([c + 6.25, fl + 3.25, pz1 - 0.16], [c + 9.15, fl + 6.75, pz1 - 0.12], M.glass));
+  g.add(boxAt([c - 4.2, fl, pz1 - 0.12], [c + 2.2, fl + 7, pz1], M.houseTrim), boxAt([c - 3.9, fl + 0.5, pz1 - 0.16], [c - 1.15, fl + 6.7, pz1 - 0.12], M.glass), boxAt([c - 0.85, fl + 0.5, pz1 - 0.16], [c + 1.9, fl + 6.7, pz1 - 0.12], M.glass));
+  g.add(boxAt([c + 6, fl + 3, pz1 - 0.12], [c + 9.4, fl + 7, pz1], M.houseTrim), boxAt([c + 6.25, fl + 3.25, pz1 - 0.16], [c + 9.15, fl + 6.75, pz1 - 0.12], M.glass));
 
   // one hip roof over the body, wing and porch
   const o = 1.5, rx0 = bx0 - o, rz0 = wz0 - o, rx1 = bx1 + o, rz1 = bz1 + o;
   const hip = hipRoofGeometry(rx0, rz0, rx1, rz1, top, 8 / 12);
   const roof = new THREE.Mesh(hip.geometry, M.houseRoof); roof.castShadow = true; roof.receiveShadow = true;
   const under = new THREE.Mesh(hip.geometry, new THREE.MeshStandardMaterial({ color: '#efece4', side: THREE.BackSide }));
-  g.add(roof, under, fascia(rx0, rz0, rx1, rz1, top, 0.6, M.trim));
+  g.add(roof, under, fascia(rx0, rz0, rx1, rz1, top, 0.6, M.houseTrim));
   return g;
 }

@@ -54,6 +54,7 @@ export function createMaterials() {
     houseBrick: std({ map: T.brick(['#8a5443', '#9b5f4b', '#75463a', '#a56b55', '#6b4037'], '#ddd8cc', 13) }),
     houseRoof: std({ map: T.shingle('#4b4541', 6) }),
     housePost: std({ color: '#2a2622', roughness: 0.7 }),
+    houseTrim: std({ color: '#f1efe8', roughness: 0.7 }),
 
     // trees
     trunk: std({ color: '#5a4636', roughness: 1 }),

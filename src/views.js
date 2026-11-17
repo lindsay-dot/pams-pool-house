@@ -4,22 +4,27 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const EYE = 5 + 4 / 12; // 5' 4" eye height
 
-export function createViews(camera, dom, site) {
+export function createViews(camera, dom, getSite) {
   const controls = new OrbitControls(camera, dom);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
 
-  const pool = site.pool.outline, deck = site.poolDeck.outline;
-  const cx = (pool[0][0] + pool[2][0]) / 2, cz = (pool[0][1] + pool[2][1]) / 2;
-  const centre = new THREE.Vector3(cx, 2, cz - 8);
-
-  // places to stand, all on the deck or the pool house porch
-  const spots = [
-    { name: 'by the house steps', pos: [cx, deck[2][1] - 2.5], look: [cx, 4.5, 15] },
-    { name: 'beside the pool', pos: [deck[2][0] - 3, cz - 4], look: [cx - 6, 3, cz + 20] },
-    { name: 'on the pool house porch', pos: [cx, 20], look: [cx, 3.5, cz + 10] },
-    { name: 'at the deep end', pos: [deck[0][0] + 3, 28.5], look: [cx + 4, 3, cz + 14] },
-  ];
+  // worked out fresh each time, because the Layout tab can move things
+  function geo() {
+    const site = getSite(), pool = site.pool.outline, deck = site.poolDeck.outline;
+    const cx = (pool[0][0] + pool[2][0]) / 2, cz = (pool[0][1] + pool[2][1]) / 2;
+    return {
+      cx, cz, centre: new THREE.Vector3(cx, 2, cz - 8),
+      // places to stand, all on the deck or the pool house porch
+      spots: [
+        { name: 'by the house steps', pos: [cx, deck[2][1] - 2.5], look: [cx, 4.5, 15] },
+        { name: 'beside the pool', pos: [deck[2][0] - 3, cz - 4], look: [cx - 6, 3, cz + 20] },
+        { name: 'on the pool house porch', pos: [cx, 20], look: [cx, 3.5, cz + 10] },
+        { name: 'at the deep end', pos: [deck[0][0] + 3, 28.5], look: [cx + 4, 3, cz + 14] },
+      ],
+    };
+  }
+  const NAMES = geo().spots.map((s) => s.name);
   let mode = 'orbit', spot = -1, tween = null;
 
   function setMode(m) {
@@ -43,10 +48,11 @@ export function createViews(camera, dom, site) {
   const api = {
     controls,
     get mode() { return mode; },
-    get spotName() { return spot >= 0 ? spots[spot].name : ''; },
-    orbit() { spot = -1; fly(new THREE.Vector3(cx + 62, 34, cz + 6), centre.clone(), 'orbit'); },
-    above() { spot = -1; fly(new THREE.Vector3(cx, 135, cz + 5), new THREE.Vector3(cx, 0, cz - 7), 'above'); },
+    get spotName() { return spot >= 0 ? NAMES[spot] : ''; },
+    orbit() { const { cx, cz, centre } = geo(); spot = -1; fly(new THREE.Vector3(cx + 62, 34, cz + 6), centre, 'orbit'); },
+    above() { const { cx, cz } = geo(); spot = -1; fly(new THREE.Vector3(cx, 135, cz + 5), new THREE.Vector3(cx, 0, cz - 7), 'above'); },
     stand() {
+      const { spots } = geo();
       spot = mode === 'stand' ? (spot + 1) % spots.length : 0;
       const s = spots[spot];
       fly(new THREE.Vector3(s.pos[0], EYE, s.pos[1]), new THREE.Vector3(...s.look), 'stand');
@@ -80,7 +86,8 @@ export function createViews(camera, dom, site) {
     },
   };
   setMode('orbit');
-  camera.position.set(cx + 62, 34, cz + 6);
-  controls.target.copy(centre);
+  const g0 = geo();
+  camera.position.set(g0.cx + 62, 34, g0.cz + 6);
+  controls.target.copy(g0.centre);
   return api;
 }

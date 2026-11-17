@@ -142,3 +142,122 @@ export const T = {
     }
   }, { color: false }),
 };
+
+// ---- Stage 2 finishes ------------------------------------------------------
+function blotches(ctx, w, h, seed, count, alpha, minR, maxR) {
+  const r = rng(seed);
+  for (let i = 0; i < count; i++) {
+    const x = r() * w, y = r() * h, rad = minR + r() * (maxR - minR), dark = r() > 0.5;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    g.addColorStop(0, dark ? `rgba(0,0,0,${alpha})` : `rgba(255,255,255,${alpha})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]) { ctx.beginPath(); ctx.arc(x + dx, y + dy, rad, 0, 7); ctx.fill(); }
+  }
+}
+
+Object.assign(T, {
+  salt: (base) => tex(256, 256, [6, 6], (ctx, w, h) => {
+    speckle(ctx, w, h, base, 0.07, 41);
+    const r = rng(42);
+    for (let i = 0; i < 520; i++) { ctx.fillStyle = `rgba(0,0,0,${0.16 + r() * 0.22})`; ctx.beginPath(); ctx.arc(r() * w, r() * h, 0.7 + r() * 1.5, 0, 7); ctx.fill(); }
+  }),
+
+  // random ashlar: rectangles of mixed sizes that always fill an 8' x 8' tile
+  ashlar: (base) => tex(512, 512, [8, 8], (ctx, w, h) => {
+    const r = rng(51), n = 8, cell = w / n, used = Array.from({ length: n }, () => Array(n).fill(false));
+    const sizes = [[3, 2], [2, 2], [2, 1], [1, 2], [3, 1], [2, 3], [1, 1]];
+    ctx.fillStyle = shade(base, -0.3); ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      if (used[y][x]) continue;
+      const order = sizes.map((s) => [r(), s]).sort((a, b) => a[0] - b[0]).map((p) => p[1]);
+      const fit = order.find(([sw, sh]) => {
+        if (x + sw > n || y + sh > n) return false;
+        for (let j = 0; j < sh; j++) for (let i = 0; i < sw; i++) if (used[y + j][x + i]) return false;
+        return true;
+      }) || [1, 1];
+      for (let j = 0; j < fit[1]; j++) for (let i = 0; i < fit[0]; i++) used[y + j][x + i] = true;
+      ctx.fillStyle = shade(base, (r() - 0.5) * 0.12);
+      ctx.fillRect(x * cell + 2, y * cell + 2, fit[0] * cell - 4, fit[1] * cell - 4);
+    }
+    blotches(ctx, w, h, 52, 90, 0.07, 10, 50);
+  }),
+
+  cobble: (base) => tex(256, 256, [3, 3], (ctx, w, h) => {
+    const r = rng(61), cols = 4, rows = 6, cw = w / cols, ch = h / rows;
+    ctx.fillStyle = shade(base, -0.28); ctx.fillRect(0, 0, w, h);
+    for (let row = 0; row < rows; row++) for (let i = -1; i <= cols; i++) {
+      ctx.fillStyle = shade(base, (r() - 0.5) * 0.14);
+      ctx.beginPath(); ctx.roundRect(i * cw + (row % 2 ? cw / 2 : 0) + 3, row * ch + 3, cw - 6, ch - 6, 9); ctx.fill();
+    }
+    blotches(ctx, w, h, 62, 60, 0.06, 6, 22);
+  }),
+
+  aggregate: (base) => tex(256, 256, [3, 3], (ctx, w, h) => {
+    ctx.fillStyle = shade(base, -0.08); ctx.fillRect(0, 0, w, h);
+    const r = rng(71);
+    for (let i = 0; i < 5200; i++) {
+      ctx.fillStyle = shade(base, (r() - 0.5) * 0.36);
+      ctx.beginPath(); ctx.arc(r() * w, r() * h, 0.9 + r() * 1.9, 0, 7); ctx.fill();
+    }
+  }),
+
+  stained: (base) => tex(256, 256, [10, 10], (ctx, w, h) => {
+    speckle(ctx, w, h, base, 0.05, 81);
+    blotches(ctx, w, h, 82, 70, 0.13, 20, 70);
+  }),
+
+  coolDeck: (base) => tex(256, 256, [4, 4], (ctx, w, h) => {
+    ctx.fillStyle = shade(base, -0.07); ctx.fillRect(0, 0, w, h);
+    const r = rng(91);
+    ctx.fillStyle = base;
+    for (let i = 0; i < 520; i++) { ctx.beginPath(); ctx.ellipse(r() * w, r() * h, 3 + r() * 9, 2 + r() * 6, r() * 3, 0, 7); ctx.fill(); }
+  }),
+
+  // rectangular pavers in running bond: cols x rows per tile
+  pavers: (base, cols, rows, tileFt, veined = false, seed = 101) => tex(256, 256, tileFt, (ctx, w, h) => {
+    const r = rng(seed), cw = w / cols, ch = h / rows;
+    ctx.fillStyle = shade(base, -0.22); ctx.fillRect(0, 0, w, h);
+    for (let row = 0; row < rows; row++) for (let i = -1; i <= cols; i++) {
+      const x = i * cw + (row % 2 ? cw / 2 : 0), y = row * ch;
+      ctx.fillStyle = shade(base, (r() - 0.5) * (veined ? 0.07 : 0.13));
+      ctx.fillRect(x + 1.5, y + 1.5, cw - 3, ch - 3);
+      if (veined) for (let k = 0; k < 7; k++) {
+        ctx.fillStyle = `rgba(90,70,40,${0.05 + r() * 0.08})`;
+        ctx.fillRect(x + 3 + r() * (cw - 30), y + 3 + r() * (ch - 8), 8 + r() * 26, 1 + r() * 2);
+      }
+    }
+  }),
+
+  mosaic: (colors) => tex(128, 128, [0.667, 0.667], (ctx, w, h) => {
+    const r = rng(111), n = 8, c = w / n;
+    ctx.fillStyle = '#eef2f3'; ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      ctx.fillStyle = shade(colors[Math.floor(r() * colors.length)], (r() - 0.5) * 0.08);
+      ctx.fillRect(x * c + 1, y * c + 1, c - 2, c - 2);
+    }
+  }),
+
+  // raised-panel garage door: one panel per 18" x 21" tile
+  panels: (base) => tex(96, 112, [1.5, 1.75], (ctx, w, h) => {
+    ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = shade(base, -0.16); ctx.fillRect(0, 0, w, 3); ctx.fillRect(10, 14, w - 20, h - 28);
+    ctx.fillStyle = shade(base, 0.05); ctx.fillRect(14, 18, w - 28, h - 36);
+  }),
+
+  // roll-up door: narrow curved slats every 3"
+  slats: (base) => tex(16, 32, [1, 0.25], (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, shade(base, -0.14)); g.addColorStop(0.35, shade(base, 0.08)); g.addColorStop(1, shade(base, -0.06));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  }),
+
+  pebble: (base) => tex(256, 256, [2.5, 2.5], (ctx, w, h) => {
+    ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
+    const r = rng(121);
+    for (let i = 0; i < 4200; i++) {
+      ctx.fillStyle = shade(base, (r() - 0.5) * 0.26);
+      ctx.beginPath(); ctx.arc(r() * w, r() * h, 0.8 + r() * 1.5, 0, 7); ctx.fill();
+    }
+  }),
+});
