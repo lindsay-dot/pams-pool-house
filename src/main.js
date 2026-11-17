@@ -111,14 +111,15 @@ renderer.setAnimationLoop(() => {
   M.water.bumpMap.offset.y += dt * 0.02;
   renderer.render(scene, camera);
   labels.render(scene, camera);
-  if (window.SELFTEST && ++frames === 90) {
+  if (window.SELFTEST && ++frames === 30) t0 = performance.now(); // skip start-up when timing
+  if (window.SELFTEST && frames === 90) {
     // read a few pixels back to prove the picture is really being drawn
     const gl = renderer.getContext(), px = new Uint8Array(4), seen = new Set();
     for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.6], [0.7, 0.4], [0.5, 0.95]]) {
       gl.readPixels(Math.floor(gl.drawingBufferWidth * fx), Math.floor(gl.drawingBufferHeight * fy), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
       seen.add(px.slice(0, 3).join(','));
     }
-    const fps = Math.round(90000 / (performance.now() - t0));
+    const fps = Math.round(60000 / (performance.now() - t0));
     const info = renderer.info.render;
     document.title = `SELFTEST OK webgl${renderer.capabilities.isWebGL2 ? 2 : 1} ${fps}fps draws=${info.calls} tris=${info.triangles} colors=${seen.size} glerr=${gl.getError()} ${canvas.width}x${canvas.height}`;
   }
