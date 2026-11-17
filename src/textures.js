@@ -261,3 +261,53 @@ Object.assign(T, {
     }
   }),
 });
+
+// ---- Stage 3: kitchen and furniture ---------------------------------------
+Object.assign(T, {
+  granite: (base) => tex(256, 256, [3, 3], (ctx, w, h) => {
+    ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
+    const r = rng(201);
+    for (let i = 0; i < 7000; i++) {
+      ctx.fillStyle = shade(base, (r() - 0.5) * 0.45);
+      ctx.fillRect(r() * w, r() * h, 1 + r() * 2.5, 1 + r() * 2.5);
+    }
+  }),
+  quartzite: (base) => tex(256, 256, [6, 6], (ctx, w, h) => {
+    speckle(ctx, w, h, base, 0.04, 211);
+    const r = rng(212);
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 16; i++) {
+      ctx.strokeStyle = `rgba(120,105,85,${0.1 + r() * 0.2})`; ctx.lineWidth = 0.6 + r() * 2.2;
+      let x = r() * w, y = -10; ctx.beginPath(); ctx.moveTo(x, y);
+      while (y < h + 10) { x += (r() - 0.35) * 26; y += 14 + r() * 16; ctx.lineTo(x, y); }
+      ctx.stroke();
+    }
+  }),
+  stackedStone: (base) => tex(256, 256, [3, 3], (ctx, w, h) => {
+    ctx.fillStyle = shade(base, -0.3); ctx.fillRect(0, 0, w, h);
+    const r = rng(221);
+    let y = 0;
+    while (y < h) {
+      const rh = 10 + Math.floor(r() * 12);
+      let x = -r() * 40;
+      while (x < w) {
+        const rw = 26 + r() * 60;
+        ctx.fillStyle = shade(base, (r() - 0.5) * 0.2);
+        ctx.fillRect(x + 1, y + 1, rw - 2, Math.min(rh, h - y) - 2);
+        x += rw;
+      }
+      y += rh;
+    }
+  }),
+  rug: () => tex(256, 320, [8, 10], (ctx, w, h) => {
+    ctx.fillStyle = '#31506b'; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#e9e3d3'; ctx.fillRect(14, 14, w - 28, h - 28);
+    ctx.fillStyle = '#31506b'; ctx.fillRect(24, 24, w - 48, h - 48);
+    ctx.fillStyle = '#d9cfb8';
+    for (let y = 40; y < h - 40; y += 24) ctx.fillRect(38, y, w - 76, 8);
+  }),
+  weave: (base) => tex(32, 32, [0.25, 0.25], (ctx, w, h) => {
+    ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = shade(base, -0.12); ctx.fillRect(0, 0, 16, 16); ctx.fillRect(16, 16, 16, 16);
+  }),
+});

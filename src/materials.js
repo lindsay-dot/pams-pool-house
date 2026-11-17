@@ -46,6 +46,21 @@ export function createMaterials() {
     counterBase: std({ color: '#d9d6c9' }),
     counterTop: std({ color: '#7c8079', roughness: 0.4 }),
 
+    ovenDome: std({ color: '#e8e2d4' }),
+    sinkBowl: std({ color: '#6f7477', roughness: 0.35, metalness: 0.8 }),
+
+    // furniture
+    teak: std({ map: T.wood('#b08458', 0.33, 17), roughness: 0.75 }),
+    wicker: std({ map: T.weave('#5a4a3d') }),
+    cushion: std({ color: '#ece6d6', roughness: 1 }),
+    frame: std({ color: '#2b2c2e', roughness: 0.5, metalness: 0.5 }),
+    canvas: std({ color: '#2f4a66', roughness: 1, side: THREE.DoubleSide }),
+    rug: std({ map: T.rug(), roughness: 1 }),
+    pot: std({ color: '#4a4d50', roughness: 0.8 }),
+    plant: std({ color: '#4d7a3a', roughness: 1 }),
+    stoneFurn: std({ map: T.stackedStone('#9a968e') }),
+    flame: new THREE.MeshBasicMaterial({ color: '#ff9a3c' }),
+
     // fence
     fence: std({ color: '#1b1c1e', roughness: 0.5, metalness: 0.5 }),
 

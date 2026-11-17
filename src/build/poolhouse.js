@@ -126,13 +126,3 @@ export function buildPoolHouse(site, M) {
 
   return g;
 }
-
-/** The kitchen exactly as drawn: a 12' 6" straight run. Stage 3 replaces this group. */
-export function buildKitchenAsDrawn(site, M) {
-  const g = new THREE.Group(); g.name = 'kitchen';
-  const k = site.outdoorKitchen, [x0, z0] = k.asDrawn.footprint[0], [x1, z1] = k.asDrawn.footprint[2];
-  const top = k.counterHeightIn / 12;
-  g.add(boxAt([x0, 0, z0], [x1 - 0.1, top - 0.125, z1], M.counterBase));
-  g.add(boxAt([x0, top - 0.125, z0 - 0.08], [x1, top, z1 + 0.08], M.counterTop));
-  return g;
-}

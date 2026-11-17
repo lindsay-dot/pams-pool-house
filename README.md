@@ -7,4 +7,4 @@ Vite + Three.js, plain JavaScript. No accounts, no API keys.
 - `npm run dev` to work on it, `npm run build` to build, `npm run plan` to redraw `stage0-plan.html` from `site.json`.
 - Add `?selftest` to the address to get a pass/fail line in the browser tab title.
 
-Stages: 0 drawings → 1 3D site (done) → 2 finishes and colors (done) → 3 kitchen and furniture → 4 save, compare, export.
+Stages: 0 drawings → 1 3D site (done) → 2 finishes and colors (done) → 3 kitchen and furniture (done) → 4 save, compare, export.

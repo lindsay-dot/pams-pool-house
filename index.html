@@ -10,7 +10,14 @@
   <div id="stage">
     <canvas id="view" aria-label="3D view of the backyard"></canvas>
     <h1 id="title">Pam's Pool House</h1>
+    <div id="warnings" role="status" aria-live="polite" hidden></div>
     <p id="hint"></p>
+    <div id="selbar" hidden>
+      <span id="selname"></span>
+      <button type="button" id="turnL">Turn Left</button>
+      <button type="button" id="turnR">Turn Right</button>
+      <button type="button" id="removeItem">Remove</button>
+    </div>
     <nav id="views" aria-label="Choose a view">
       <button type="button" data-view="orbit">Look Around</button>
       <button type="button" data-view="above">From Above</button>
@@ -20,7 +27,7 @@
     </nav>
     <div id="loading">Loading the backyard…</div>
   </div>
-  <aside id="panel" aria-label="Finishes and colors"></aside>
+  <aside id="panel" aria-label="Design choices"></aside>
   <script>
     // ?selftest puts a pass/fail line in the tab title so the app can be checked in any browser
     window.SELFTEST = location.search.includes('selftest');

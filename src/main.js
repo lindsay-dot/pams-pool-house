@@ -4,7 +4,7 @@ import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import approvedSite from '../site.json';
 import './style.css';
 import { createMaterials } from './materials.js';
-import { buildPoolHouse, buildKitchenAsDrawn } from './build/poolhouse.js';
+import { buildPoolHouse } from './build/poolhouse.js';
 import { buildPoolAndDeck, buildFence } from './build/pool.js';
 import { buildGrounds, buildHouse } from './build/grounds.js';
 import { buildDimensions } from './dimensions.js';
@@ -12,7 +12,11 @@ import { createViews } from './views.js';
 import { createStore } from './store.js';
 import { applyDesign } from './finishes.js';
 import { approvedLayout, loadLayout, saveLayout, deriveSite, isApproved } from './layout.js';
-import { createPanel } from './ui.js';
+import { createPanel, itemTitle } from './ui.js';
+import { kitchenPlan, buildKitchen } from './kitchen.js';
+import { buildItem, positionItem, startingSpot, furnitureDef } from './furniture.js';
+import { checkDesign } from './checks.js';
+import { createInteraction } from './interact.js';
 
 const wrap = document.getElementById('stage');
 const canvas = document.getElementById('view');
@@ -90,19 +94,96 @@ function rebuildSite() {
   siteGroup = new THREE.Group();
   siteGroup.add(
     buildGrounds(site, M), buildHouse(site, M), buildPoolAndDeck(site, M), buildFence(site, M),
-    buildPoolHouse(site, M), buildKitchenAsDrawn(site, M),
+    buildPoolHouse(site, M),
   );
   dims = buildDimensions(site);
   dims.visible = dimsVisible;
   scene.add(siteGroup, dims);
   setSun(layoutState.sunDirection, layoutState.sunHeight);
+  rebuildDynamic();
+}
+
+// --- design: finishes, kitchen and furniture --------------------------------------------
+const store = createStore();
+const dyn = new THREE.Group(); dyn.name = 'kitchenAndFurniture';
+scene.add(dyn);
+let itemsRoot = null, selectedId = null, plan = null, panel = null;
+const warnBox = document.getElementById('warnings'), selBar = document.getElementById('selbar'), selName = document.getElementById('selname');
+
+function showChecks(items) {
+  const res = checkDesign(site, store.get(), plan, items);
+  warnBox.hidden = res.messages.length === 0;
+  warnBox.replaceChildren(...res.messages.slice(0, 3).map((m) => Object.assign(document.createElement('p'), { textContent: m })));
+  if (res.messages.length > 3) warnBox.append(Object.assign(document.createElement('p'), { className: 'more', textContent: `…and ${res.messages.length - 3} more to look at.` }));
+  for (const g of itemsRoot.children) {
+    const ring = g.getObjectByName('ring'), id = g.userData.itemId;
+    ring.visible = id === selectedId || res.bad.has(id);
+    ring.material.color.set(res.bad.has(id) ? 0xd4380d : 0x1f6f8b);
+  }
+  return res;
+}
+function showSelection() {
+  const it = store.get().items.find((i) => i.id === selectedId);
+  if (!it) selectedId = null;
+  selBar.hidden = !it;
+  document.getElementById('hint').hidden = !!it;
+  if (it) selName.textContent = itemTitle(it.type);
+}
+function rebuildDynamic() {
+  const d = store.get();
+  dyn.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+  dyn.clear();
+  plan = kitchenPlan(site, d.kitchen);
+  itemsRoot = new THREE.Group();
+  for (const it of d.items) itemsRoot.add(buildItem(it, site, M));
+  dyn.add(buildKitchen(site, d.kitchen, plan, M), itemsRoot);
+  showSelection();
+  showChecks();
+  refreshShadows();
 }
 rebuildSite();
-
-// --- design (finishes and colors) ----------------------------------------------------
-const store = createStore();
 applyDesign(store.get(), M);
-store.subscribe((d) => applyDesign(d, M));
+store.subscribe((d) => { applyDesign(d, M); rebuildDynamic(); });
+
+const furniture = {
+  selected: () => selectedId,
+  select(id) { if (id === selectedId) return; selectedId = id; showSelection(); showChecks(); panel?.render(); },
+  add(type) {
+    const items = store.get().items, id = `p${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
+    selectedId = id;
+    // try a few starting spots and take the first one that is clear
+    let item = null;
+    for (let k = 0; k < 18; k++) {
+      item = { id, type, ...startingSpot(type, site, k) };
+      if (!checkDesign(site, store.get(), plan, [...items, item]).bad.has(id)) break;
+    }
+    store.set('items', [...items, item]);
+  },
+  remove(id) {
+    if (!id) return;
+    if (id === selectedId) selectedId = null;
+    store.set('items', store.get().items.filter((i) => i.id !== id));
+  },
+  change(id, patch) { store.set('items', store.get().items.map((i) => (i.id === id ? { ...i, ...patch } : i))); },
+  turn(deg) {
+    const it = store.get().items.find((i) => i.id === selectedId);
+    if (it) this.change(it.id, { rot: (((it.rot + deg) % 360) + 360) % 360 });
+  },
+};
+document.getElementById('turnL').addEventListener('click', () => furniture.turn(15));
+document.getElementById('turnR').addEventListener('click', () => furniture.turn(-15));
+document.getElementById('removeItem').addEventListener('click', () => furniture.remove(selectedId));
+window.addEventListener('keydown', (e) => {
+  if (!selectedId || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) return;
+  const it = store.get().items.find((i) => i.id === selectedId), step = 0.5;
+  const move = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+  if (e.key === 'Delete' || e.key === 'Backspace') furniture.remove(selectedId);
+  else if (e.key === 'r' || e.key === 'R') furniture.turn(e.shiftKey ? -15 : 15);
+  else if (e.key === 'Escape') furniture.select(null);
+  else if (move) furniture.change(it.id, { x: it.x + move[0], z: it.z + move[1] });
+  else return;
+  e.preventDefault();
+});
 
 const layoutSubs = new Set();
 const layout = {
@@ -123,7 +204,7 @@ const layout = {
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   },
 };
-createPanel(document.getElementById('panel'), { store, layout });
+panel = createPanel(document.getElementById('panel'), { store, layout, furniture });
 
 // --- views and buttons -------------------------------------------------------------
 const views = createViews(camera, canvas, () => site);
@@ -148,6 +229,26 @@ dimBtn.addEventListener('click', () => {
   dimBtn.textContent = dimsVisible ? 'Hide Measurements' : 'Show Measurements';
 });
 setActive('orbit');
+
+// pick up and drag furniture
+const clampYard = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+createInteraction({
+  canvas, camera, controls: views.controls,
+  getItemsRoot: () => itemsRoot,
+  canDrag: () => views.mode !== 'stand',
+  onSelect: (id) => furniture.select(id),
+  onDrag(id, group, x, z) {
+    const moved = { ...store.get().items.find((i) => i.id === id), x: clampYard(x, -70, 100), z: clampYard(z, -40, 130) };
+    positionItem(group, moved, site);
+    group.userData.pending = moved;
+    showChecks(store.get().items.map((i) => (i.id === id ? moved : i)));
+    refreshShadows();
+  },
+  onDrop(id, group) {
+    const m = group.userData.pending;
+    if (m) furniture.change(id, { x: m.x, z: m.z });
+  },
+});
 
 // --- size + loop ---------------------------------------------------------------------
 function resize() {
@@ -186,4 +287,4 @@ renderer.setAnimationLoop(() => {
 });
 
 document.getElementById('loading')?.remove();
-window.__designer = { scene, camera, renderer, views, M, store, layout, refreshShadows, get site() { return site; } };
+window.__designer = { scene, camera, renderer, views, M, store, layout, furniture, refreshShadows, get site() { return site; }, get plan() { return plan; }, checks: () => checkDesign(site, store.get(), plan), furnitureDef };

@@ -1,6 +1,8 @@
 // Every finish and color she can pick, with plain names. Picking one only changes
 // how a surface looks; no size in site.json is ever touched here.
 import { T } from './textures.js';
+import { KITCHEN_LAYOUTS, COUNTERS, BASES, GRILL_SIZES, APPLIANCES, DEFAULT_KITCHEN, applianceWidthIn } from './kitchen.js';
+import { FURNITURE, sizeLabel } from './furniture.js';
 
 const C = (id, name, hex, extra = {}) => ({ id, name, hex, ...extra });
 
@@ -99,6 +101,8 @@ export const DEFAULT_DESIGN = {
   roof: { type: 'shingle', color: 'weathered-wood' },
   doors: 'oak',
   storageDoor: { style: 'panel', color: 'charcoal' },
+  kitchen: DEFAULT_KITCHEN,
+  items: [],
 };
 
 const byId = (list, id) => list.find((o) => o.id === id) || list[0];
@@ -107,7 +111,9 @@ const byId = (list, id) => list.find((o) => o.id === id) || list[0];
 export function normalizeDesign(d) {
   const out = JSON.parse(JSON.stringify(DEFAULT_DESIGN));
   for (const k of Object.keys(out)) {
-    if (d && d[k] != null) out[k] = typeof out[k] === 'object' ? { ...out[k], ...d[k] } : d[k];
+    if (!d || d[k] == null) continue;
+    if (Array.isArray(out[k])) out[k] = Array.isArray(d[k]) ? d[k] : out[k];
+    else out[k] = typeof out[k] === 'object' ? { ...out[k], ...d[k] } : d[k];
   }
   out.deck.finish = byId(DECK, out.deck.finish).id;
   out.deck.color = byId(byId(DECK, out.deck.finish).colors, out.deck.color).id;
@@ -122,6 +128,15 @@ export function normalizeDesign(d) {
   out.doors = byId(DOORS, out.doors).id;
   out.storageDoor.style = byId(STORAGE_DOOR, out.storageDoor.style).id;
   out.storageDoor.color = byId(STORAGE_DOOR_COLORS, out.storageDoor.color).id;
+  const k = out.kitchen;
+  k.layout = byId(KITCHEN_LAYOUTS, k.layout).id;
+  k.counter = byId(COUNTERS, k.counter).id;
+  k.base = byId(BASES, k.base).id;
+  k.grill = byId(GRILL_SIZES, String(k.grill)).id;
+  k.appliances = APPLIANCES.map((a) => a.id).filter((id) => (k.appliances || []).includes(id));
+  out.items = out.items
+    .filter((it) => it && FURNITURE.some((f) => f.type === it.type) && Number.isFinite(it.x) && Number.isFinite(it.z))
+    .map((it) => ({ id: String(it.id), type: it.type, x: it.x, z: it.z, rot: Number(it.rot) || 0 }));
   return out;
 }
 
@@ -172,6 +187,15 @@ export function applyDesign(design, M) {
 
   const sd = byId(STORAGE_DOOR, d.storageDoor.style), sdColor = byId(STORAGE_DOOR_COLORS, d.storageDoor.color);
   setMap(M.garageDoor, `sdoor:${sd.id}:${sdColor.hex}`, () => sd.make(sdColor.hex));
+
+  const counter = byId(COUNTERS, d.kitchen.counter), base = byId(BASES, d.kitchen.base);
+  const counterTex = { granite: () => T.granite(counter.hex), quartzite: () => T.quartzite(counter.hex), concrete: () => T.plain(counter.hex, 0.07, 4, 33), tile: () => T.tile(counter.hex, 0.5) }[counter.kind];
+  setMap(M.counterTop, `counter:${counter.id}`, counterTex);
+  M.counterTop.color.set('#ffffff'); M.counterTop.roughness = counter.kind === 'concrete' ? 0.8 : 0.3;
+  const baseTex = { stucco: () => T.plain(base.hex, 0.05, 3, 35), stone: () => T.stackedStone(base.hex), brick: () => T.brick(['#8f5747', '#9c5b4a', '#7d4a3d', '#a9685a'], '#d8d2c6'), stainless: null }[base.kind];
+  setMap(M.counterBase, `base:${base.id}`, baseTex);
+  M.counterBase.color.set(base.kind === 'stainless' ? base.hex : '#ffffff');
+  M.counterBase.metalness = base.kind === 'stainless' ? 0.85 : 0; M.counterBase.roughness = base.kind === 'stainless' ? 0.35 : 0.9;
   return d;
 }
 
@@ -204,6 +228,13 @@ export function panelGroups(design) {
     { tab: 'house', label: 'Porch doors', path: 'doors', value: d.doors, options: colors(DOORS) },
     { tab: 'house', label: 'Storage door', path: 'storageDoor.style', value: d.storageDoor.style, options: kinds(STORAGE_DOOR, 'sdoor') },
     { tab: 'house', label: 'Storage door color', path: 'storageDoor.color', value: d.storageDoor.color, options: colors(STORAGE_DOOR_COLORS) },
+    { tab: 'kitchen', label: 'Kitchen shape', path: 'kitchen.layout', value: d.kitchen.layout, options: KITCHEN_LAYOUTS.map((l) => ({ id: l.id, name: l.name, swatch: layoutIcon(l.id), wide: true })) },
+    { tab: 'kitchen', kind: 'toggles', label: 'What goes in the kitchen', path: 'kitchen.appliances', value: d.kitchen.appliances,
+      options: APPLIANCES.map((a) => ({ id: a.id, name: a.name, note: `${applianceWidthIn(a, d.kitchen)}" wide` })) },
+    { tab: 'kitchen', label: 'Grill size', path: 'kitchen.grill', value: d.kitchen.grill, options: GRILL_SIZES.map((g) => ({ id: g.id, name: g.name, swatch: '#b9bec2', chipText: `${g.id}"` })) },
+    { tab: 'kitchen', label: 'Countertop', path: 'kitchen.counter', value: d.kitchen.counter, options: colors(COUNTERS) },
+    { tab: 'kitchen', label: 'Kitchen base', path: 'kitchen.base', value: d.kitchen.base, options: colors(BASES) },
+    { tab: 'furniture', kind: 'library', label: 'Add furniture', options: FURNITURE.map((f) => ({ id: f.type, name: f.name, note: sizeLabel(f) })) },
   ];
 }
 
@@ -211,4 +242,23 @@ export const TABS = [
   { id: 'deck', name: 'Deck' },
   { id: 'pool', name: 'Pool' },
   { id: 'house', name: 'Pool House' },
+  { id: 'kitchen', name: 'Kitchen' },
+  { id: 'furniture', name: 'Furniture' },
 ];
+
+/** Little top-down pictures of the four kitchen shapes. */
+function layoutIcon(id) {
+  const key = `icon:${id}`;
+  if (!cache.has(key)) {
+    const c = document.createElement('canvas'); c.width = 168; c.height = 108;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#efece3'; ctx.fillRect(0, 0, 168, 108);
+    ctx.fillStyle = '#5d6b73';
+    ctx.fillRect(20, 10, 22, 88);
+    if (id === 'l' || id === 'u') ctx.fillRect(42, 76, 34, 22);
+    if (id === 'u') ctx.fillRect(42, 10, 34, 22);
+    if (id === 'island') { ctx.fillRect(84, 24, 26, 60); ctx.fillStyle = '#b08458'; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(124, 32 + i * 15, 5, 0, 7); ctx.fill(); } }
+    cache.set(key, `url(${c.toDataURL()})`);
+  }
+  return cache.get(key);
+}
